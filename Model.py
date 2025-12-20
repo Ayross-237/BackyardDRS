@@ -121,7 +121,18 @@ class Video:
                     chosen = i
         self._points.append(chosen[:3])
         
+    def updateParameters(self, params: Parameters) -> None:
+        """
+        Updates the ball tracking parameters.
 
+        parameters:
+            params (Parameters): New ball tracking parameters.
+        """
+        self._params = params
+        self._points = []
+        for i in range(self._firstValidFrame, len(self._frames)):
+            self._curFrame = self._frames[i]
+            self._trackBallInCurrentFrame()
         
 class Model:
     """
