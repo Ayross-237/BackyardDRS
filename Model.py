@@ -1,14 +1,7 @@
 import cv2 as cv
 import numpy as np
 from dataclasses import dataclass
-
-@dataclass
-class Render:
-    frontFrame: any
-    sideFrame: any
-    frontPoints: list[tuple[int]]
-    sidePoints: list[tuple[int]]
-    stumpPosition: int | None
+from library import *
 
 class Video:
     """
@@ -31,7 +24,7 @@ class Video:
         self._firstValidFrame = None
         self._frames = []
         self._points = []
-
+        self._params = defaultParameters()
 
     def getDimensions(self) -> tuple[int, int]:
         """
@@ -44,7 +37,6 @@ class Video:
         height = int(self._video.get(cv.CAP_PROP_FRAME_HEIGHT))
         return (width, height)
 
-
     def getFPS(self) -> int:
         """
         Returns the frames per second of the video.
@@ -54,7 +46,6 @@ class Video:
         """
         return int(self._video.get(cv.CAP_PROP_FPS))
     
-
     def markFirstFrame(self) -> bool:
         """
         Starts tracking the ball in the video.
@@ -63,7 +54,6 @@ class Video:
             return False
         self._firstValidFrame = len(self._frames) - 1
         return True
-
 
     def getCurrentFrame(self):
         """
@@ -74,13 +64,11 @@ class Video:
         """
         return self._curFrame.copy()
 
-
     def getPoints(self):
         """
         TODO: DOCUMENT METHOD AND UPDDATE TYPE HINT
         """
         return self._points.copy()
-
 
     def incrementFrame(self) -> bool:
         """
@@ -101,10 +89,40 @@ class Video:
         return True
     
     def _trackBallInCurrentFrame(self) -> None:
-        pass
+        """
+        Tracks the ball in the current frame and updates the points list.
+        Requires that at least one frame has been processed.
+        """
+        prevCircle = self._points[-1] if len(self._points) > 0 else None
 
+        # Split the frame into its color channels and apply Gaussian blur
+        b, g, r = cv.split(self._curFrame)
+        blur = cv.GaussianBlur(r, (self._params.blurSqrSize, self._params.blurSqrSize), 0)
 
+        # Detect circles in the blurred image using HoughCircles
+        circles = cv.HoughCircles(blur, cv.HOUGH_GRADIENT, self._params.dp, self._params.minDist, 
+            param1=self._params.param1, 
+            param2=self._params.param2, 
+            minRadius=self._params.minRadius, 
+            maxRadius=self._params.maxRadius
+        )
 
+        if circles is None:
+            return
+        
+        # Add the most likely circle to the points list based on distance to the previous circle
+        circles = np.uint32(np.around(circles))
+        chosen = None
+        for i in circles[0, :]:
+            if chosen is None: 
+                chosen = i
+            if prevCircle is not None:
+                if dist(chosen[0], chosen[1], prevCircle[0], prevCircle[1]) <= dist(i[0], i[1], prevCircle[0], prevCircle[1]):
+                    chosen = i
+        self._points.append(chosen[:3])
+        
+
+        
 class Model:
     """
     A class to handle the ball tracking model.
@@ -122,7 +140,6 @@ class Model:
         self._isLinked = False
         self._stumpPosition = None
     
-
     def setStumpPosition(self, position: int) -> None: 
         """
         Sets the stump position from the view of the side video.
@@ -131,7 +148,6 @@ class Model:
             position (int): The stump position.
         """
         self._stumpPosition = position
-
 
     def linkVideos(self) -> bool:
         """
@@ -142,7 +158,6 @@ class Model:
         """
         self._isLinked = True
     
-
     def startTracking(self) -> None:
         """
         Starts the ball tracking process for both video views.
@@ -150,7 +165,6 @@ class Model:
         self._frontVideo.markFirstFrame()
         self._sideVideo.markFirstFrame()
     
-
     def render(self) -> Render:
         """
         Renders the current frames and ball tracking points from both video views.
@@ -163,5 +177,19 @@ class Model:
         frontPoints = self._frontVideo.getPoints()
         sidePoints = self._sideVideo.getPoints()
         return Render(frontFrame, sideFrame, frontPoints, sidePoints, self._stumpPosition)
-        
-    
+
+    def incrementFrame(self, view: View) -> bool:
+        """
+        Advances to the next frame in the specified video view.
+
+        parameters:
+            view (View): The video view to increment (FRONT or SIDE).
+
+        returns:
+            bool: True if successful, false otherwise.
+        """
+        if view == View.FRONT:
+            return self._frontVideo.incrementFrame()
+        elif view == View.SIDE:
+            return self._sideVideo.incrementFrame()
+        return False
