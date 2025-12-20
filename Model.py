@@ -130,9 +130,11 @@ class Video:
         """
         self._params = params
         self._points = []
-        for i in range(self._firstValidFrame, len(self._frames)):
-            self._curFrame = self._frames[i]
-            self._trackBallInCurrentFrame()
+        
+        if self._firstValidFrame is not None:
+            for i in range(self._firstValidFrame, len(self._frames)):
+                self._curFrame = self._frames[i]
+                self._trackBallInCurrentFrame()
         
 class Model:
     """
