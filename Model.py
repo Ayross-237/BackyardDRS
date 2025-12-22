@@ -64,9 +64,9 @@ class Video:
         """
         return self._curFrame.copy()
 
-    def getPoints(self):
+    def getPoints(self) -> list[tuple[int]]:
         """
-        TODO: DOCUMENT METHOD AND UPDDATE TYPE HINT
+        Returns a copy of the list of tracked ball positions.
         """
         return self._points.copy()
 
@@ -130,7 +130,7 @@ class Video:
         """
         self._params = params
         self._points = []
-        
+
         if self._firstValidFrame is not None:
             for i in range(self._firstValidFrame, len(self._frames)):
                 self._curFrame = self._frames[i]
@@ -201,6 +201,9 @@ class Model:
         returns:
             bool: True if successful, false otherwise.
         """
+        if self._isLinked:
+            return self._frontVideo.incrementFrame() and self._sideVideo.incrementFrame()
+
         if view == View.FRONT:
             return self._frontVideo.incrementFrame()
         elif view == View.SIDE:
