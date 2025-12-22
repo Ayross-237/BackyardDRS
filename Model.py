@@ -130,7 +130,7 @@ class Video:
         """
         self._params = params
         self._points = []
-
+        print(self._firstValidFrame, len(self._frames))
         if self._firstValidFrame is not None:
             for i in range(self._firstValidFrame, len(self._frames)):
                 self._curFrame = self._frames[i]
@@ -140,7 +140,7 @@ class Model:
     """
     A class to handle the ball tracking model.
     """
-    def __init__(self, frontViddeo: Video, sideVideo: Video) -> None:
+    def __init__(self, frontVideo: Video, sideVideo: Video) -> None:
         """
         Initializes the Model object with the given video objects.
 
@@ -148,10 +148,11 @@ class Model:
             frontVideo (Video): Video object for the front view.
             sideVideo (Video): Video object for the side view.
         """
-        self._frontVideo = frontViddeo
+        self._frontVideo = frontVideo
         self._sideVideo = sideVideo
         self._isLinked = False
         self._stumpPosition = None
+        self._framesSinceLink = {frontVideo: 0, sideVideo: 0}
     
     def setStumpPosition(self, position: int) -> None: 
         """
@@ -202,7 +203,17 @@ class Model:
             bool: True if successful, false otherwise.
         """
         if self._isLinked:
-            return self._frontVideo.incrementFrame() and self._sideVideo.incrementFrame()
+            FPSRatio = self._frontVideo.getFPS() / self._sideVideo.getFPS()
+            fast, slow = self._frontVideo, self._sideVideo
+            if FPSRatio < 1:
+                fast, slow = self._sideVideo, self._frontVideo
+                FPSRatio = 1 / FPSRatio
+            
+            fast.incrementFrame()
+            self._framesSinceLink[fast] += 1
+            if self._framesSinceLink[fast] / self._framesSinceLink[slow] < FPSRatio:
+                slow.incrementFrame()
+                self._framesSinceLink[slow] += 1
 
         if view == View.FRONT:
             return self._frontVideo.incrementFrame()

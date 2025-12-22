@@ -35,24 +35,26 @@ class FakeCapture:
 
 
 class DummyVideo:
-            def __init__(self, frame, points):
-                self.frame = frame
-                self.points = points
-                self.marked = False
-                self.incremented = False
+    def __init__(self, frame, points):
+        self.frame = frame
+        self.points = points
+        self.marked = False
+        self.incremented = False
 
-            def getCurrentFrame(self):
-                return self.frame
+    def getCurrentFrame(self):
+        return self.frame
 
-            def getPoints(self):
-                return self.points
+    def getPoints(self):
+        return self.points
 
-            def markFirstFrame(self):
-                self.marked = True
+    def markFirstFrame(self):
+        self.marked = True
 
-            def incrementFrame(self):
-                self.incremented = True
-                return True
+    def incrementFrame(self):
+        self.incremented = True
+        return True
+    
+
 
 
 class TestVideo:
@@ -105,4 +107,3 @@ class TestVideo:
         np.testing.assert_array_equal(video._curFrame, frame2)
 
         assert video.incrementFrame() is False  # No more frames
-
