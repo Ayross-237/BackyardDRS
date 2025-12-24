@@ -114,8 +114,8 @@ class Video:
         Requires that at least one frame has been processed.
         """
         prevCircle = self._points[-1] if len(self._points) > 0 else None
-        prevCircle[0] -= self._cropRegion[0][0]
-        prevCircle[1] -= self._cropRegion[0][1]
+        if prevCircle:
+            prevCircle = (prevCircle[0] - self._cropRegion[0][0], prevCircle[1] - self._cropRegion[0][1], prevCircle[2])
 
 
         # Split the frame into its color channels and apply Gaussian blur
