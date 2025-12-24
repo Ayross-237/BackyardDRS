@@ -114,6 +114,9 @@ class Video:
         Requires that at least one frame has been processed.
         """
         prevCircle = self._points[-1] if len(self._points) > 0 else None
+        prevCircle[0] -= self._cropRegion[0][0]
+        prevCircle[1] -= self._cropRegion[0][1]
+
 
         # Split the frame into its color channels and apply Gaussian blur
         cropped = self._curFrame[self._cropRegion[0][1]:self._cropRegion[1][1], self._cropRegion[0][0]:self._cropRegion[1][0]]
@@ -121,7 +124,9 @@ class Video:
         blur = cv.GaussianBlur(r, (self._params.blurSqrSize, self._params.blurSqrSize), 0)
 
         # Detect circles in the blurred image using HoughCircles
-        circles = cv.HoughCircles(blur, cv.HOUGH_GRADIENT, self._params.dp, self._params.minDist, 
+        circles = cv.HoughCircles(blur, cv.HOUGH_GRADIENT, 
+            self._params.dp, 
+            self._params.minDist, 
             param1=self._params.param1, 
             param2=self._params.param2, 
             minRadius=self._params.minRadius, 
@@ -141,6 +146,7 @@ class Video:
                 if dist(chosen[0], chosen[1], prevCircle[0], prevCircle[1]) <= dist(i[0], i[1], prevCircle[0], prevCircle[1]):
                     chosen = i
         
+        # Account for the fact that only a cropped image is used in the algorithm
         adjustedX = chosen[0] + self._cropRegion[0][0]
         adjustedY = chosen[1] + self._cropRegion[0][1]
         chosen = (adjustedX, adjustedY, chosen[2])

@@ -99,7 +99,7 @@ class Slider:
         """
         return self._scale.get()
 
-    def onChange(self, function: function) -> None:
+    def onChange(self, function) -> None:
         """
         Sets a function to be called when the slider value changes.
         parameters:
@@ -126,7 +126,7 @@ class ParameterBar:
         (Parameter.PARAM2, 1, 300, 1)
     ]
 
-    def __init__(self, root: tk.Frame | tk.Tk, parameters: Parameters, function: function):
+    def __init__(self, root: tk.Frame | tk.Tk, parameters: Parameters, function):
         """
         Initializes the ParameterBar object with the given Tkinter root.
         parameters:
@@ -181,7 +181,7 @@ class ParameterBar:
         )
 
 class CropControlBar:
-    def __init__(self, root: tk.Frame | tk.Tk, videoDimensions: tuple[int], setCropFunction: function) -> None:
+    def __init__(self, root: tk.Frame | tk.Tk, videoDimensions: tuple[int], setCropFunction) -> None:
         """
         Initializes the CropControlBar object with the given Tkinter root.
         parameters:
@@ -223,7 +223,7 @@ class CropControlBar:
 
 
 class PlaybackBar:
-    def __init__(self, root: tk.Frame | tk.Tk, nextFunction: function, startTrackFunction: function) -> None:
+    def __init__(self, root: tk.Frame | tk.Tk, nextFunction, startTrackFunction) -> None:
         """
         Initializes the VideoControlBar object with the given Tkinter root.
         parameters:
@@ -247,7 +247,7 @@ class PlaybackBar:
 
 
 class VideoControlBar:
-    def __init__(self, root: tk.Frame | tk.Tk, videoName: str, dimensions: tuple[int], parameterFunction: function, cropFunction: function, nextFunction: function, startTrackFunction: function) -> None:
+    def __init__(self, root: tk.Frame | tk.Tk, videoName: str, dimensions: tuple[int], parameterFunction, cropFunction, nextFunction, startTrackFunction) -> None:
         """
         Initializes the ControlBar object with the given Tkinter root.
         parameters:
@@ -313,3 +313,5 @@ class MasterControlBar:
         Returns the frame containing the master control bar.
         """
         return self._frame
+
+
