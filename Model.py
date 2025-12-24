@@ -244,3 +244,17 @@ class Model:
         elif view == View.SIDE:
             return self._sideVideo.incrementFrame()
         return False
+    
+    def makePrediction(self) -> tuple[int]:
+        """
+        Outputs the predicted line and height of the ball from the data collected from ball tracking.
+        """
+
+        if self._stumpPosition == None:
+            raise ValueError("Stump position must be set.")
+        if self._isLinked == False:
+            raise ValueError("Must link videos before predicting.")
+        
+        return (0, 0)
+        
+

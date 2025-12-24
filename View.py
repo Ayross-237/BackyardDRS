@@ -5,38 +5,51 @@ from library import *
 from PIL import Image, ImageTk
 
 class FrameElement:
-    def __init__(self, root):
+    """
+    Abstract class representing a UI element that is built within a frame
+    """
+    def __init__(self, root: tk.Frame | tk.Tk) -> None:
+        """
+        Initialises the UI element frame
+        """
         self._frame = tk.Frame(root)
     
     def getFrame(self) -> tk.Frame:
+        """
+        Returns the frame containing the UI element.
+        """
         return self._frame
 
 class VideoView:
     """
     A class to handle the video display in a Tkinter GUI.
     """
-    def __init__(self, root, width, height):
+    def __init__(self, root: tk.Frame | tk.Tk, width: int, height: int) -> None:
         """
         Initializes the VideoView object with the given Tkinter root.
         parameters:
             root: The Tkinter root window.
+            width: The width of the UI element
+            height: The height of the UI element
         """
         self._width = width
         self._height = height
         self._root = root
         self._label = tk.Label(root)
     
-    def getLabel(self):
+    def getLabel(self) -> tk.Label:
         """
         Returns the label containing the video frame.
         """
         return self._label
 
-    def updateFrame(self, frame, circles=[], cropRegion=None):
+    def updateFrame(self, frame, circles: list[tuple[int]]=[], cropRegion: tuple[tuple[int]]=None) -> None:
         """
         Updates the displayed frame in the GUI.
         parameters:
             frame: The frame to display (as a numpy array).
+            circles: The circles to draw on the image
+            cropRegion: The region which will be analysed for ball tracking
         """
         for circle in circles:
             cv.circle(frame, (circle[0], circle[1]), circle[2], (0, 0, 255), 2)
@@ -52,7 +65,7 @@ class VideoView:
 
 
 class Slider:
-    def __init__(self, root: tk.Frame, label: str, from_:float, to: float, resolution: float, default: float, orient=tk.VERTICAL):
+    def __init__(self, root: tk.Frame, label: str, from_:float, to: float, resolution: float, default: float, orient=tk.VERTICAL) -> None:
         """
         Initializes the Slider object with the given Tkinter root.
         parameters:
@@ -60,31 +73,33 @@ class Slider:
             label: The label for the slider.
             from_: The minimum value of the slider.
             to: The maximum value of the slider.
+            resolution: The increments of the slider.
+            default: The initial value on the slider
             orient: The orientation of the slider (default is HORIZONTAL).
         """
-        self._root = root
         self._frame = tk.Frame(root)
 
         self._label = tk.Label(self._frame, text=label)
         self._label.pack(side=tk.TOP, fill=tk.X, expand=tk.TRUE)
+
         self._scale = tk.Scale(self._frame, orient=orient, length=100, from_=from_, to=to, resolution=resolution)
         self._scale.set(default)
         self._scale.pack(side=tk.TOP)
         
 
-    def getFrame(self):
+    def getFrame(self) -> tk.Frame:
         """
         Returns the frame containing the slider.
         """
         return self._frame
     
-    def getValue(self):
+    def getValue(self) -> float:
         """
         Returns the current value of the slider.
         """
         return self._scale.get()
 
-    def onChange(self, function):
+    def onChange(self, function: function) -> None:
         """
         Sets a function to be called when the slider value changes.
         parameters:
@@ -93,7 +108,7 @@ class Slider:
         self.function = function
         self._scale.bind("<ButtonRelease-1>", self._updateParameters)
     
-    def _updateParameters(self, event):
+    def _updateParameters(self, event) -> None:
         self.function()
 
 
@@ -111,13 +126,12 @@ class ParameterBar:
         (Parameter.PARAM2, 1, 300, 1)
     ]
 
-    def __init__(self, root, parameters: Parameters, function):
+    def __init__(self, root: tk.Frame | tk.Tk, parameters: Parameters, function: function):
         """
         Initializes the ParameterBar object with the given Tkinter root.
         parameters:
             root: The Tkinter root window.
         """
-        self._root = root
         self._frame = tk.Frame(root)
         self._sliders = {} 
 
@@ -126,11 +140,11 @@ class ParameterBar:
 
         for param, from_, to, step in self.PARAMETERS:
             slider = Slider(self._frame, param.value, from_, to, step, (to + from_) / 2)
-            slider.onChange(lambda: onChange())
+            slider.onChange(onChange)
             slider.getFrame().pack(side=tk.LEFT, expand=tk.Y)
             self._sliders[param] = slider
     
-    def getFrame(self):
+    def getFrame(self) -> tk.Frame:
         """
         Returns the frame containing the parameter bar.
         """
@@ -167,16 +181,15 @@ class ParameterBar:
         )
 
 class CropControlBar:
-    def __init__(self, root, videoDimensions, setCropFunction):
+    def __init__(self, root: tk.Frame | tk.Tk, videoDimensions: tuple[int], setCropFunction: function) -> None:
         """
         Initializes the CropControlBar object with the given Tkinter root.
         parameters:
             root: The Tkinter root window.
+            videoDimensions: The dimensions of the video being controlled
+            setCropFunction: The function used to execute the crop on the video
         """
-        self._root = root
         self._frame = tk.Frame(root)
-
-        self._setCropFunction = setCropFunction
 
         self._top = Slider(self._frame, "Top", 0, videoDimensions[1], 1, 0)
         self._top.getFrame().pack(side=tk.LEFT)
@@ -193,7 +206,7 @@ class CropControlBar:
                 top = int(self._top.getValue())
                 right = int(self._right.getValue())
                 bottom = int(self._bottom.getValue())
-                self._setCropFunction((left, top), (right, bottom))
+                setCropFunction((left, top), (right, bottom))
             except ValueError:
                 messagebox.showerror("Invalid Input", "Please enter valid integer values for crop coordinates.")
 
@@ -202,7 +215,7 @@ class CropControlBar:
         self._bottom.onChange(crop)
         self._right.onChange(crop)
     
-    def getFrame(self):
+    def getFrame(self) -> tk.Frame:
         """
         Returns the frame containing the crop control bar.
         """
@@ -210,13 +223,14 @@ class CropControlBar:
 
 
 class PlaybackBar:
-    def __init__(self, root, nextFunction, startTrackFunction):
+    def __init__(self, root: tk.Frame | tk.Tk, nextFunction: function, startTrackFunction: function) -> None:
         """
         Initializes the VideoControlBar object with the given Tkinter root.
         parameters:
             root: The Tkinter root window.
+            nextFunction: The funciton that moves to the next frame of the video
+            startTrackFunction: The function that initiates ball tracking on the video
         """
-        self._root = root
         self._frame = tk.Frame(root)
 
         nextButton = tk.Button(self._frame, text="Next Frame", command=nextFunction)
@@ -233,11 +247,16 @@ class PlaybackBar:
 
 
 class VideoControlBar:
-    def __init__(self, root, videoName, dimensions, parameterFunction, cropFunction, nextFunction, startTrackFunction):
+    def __init__(self, root: tk.Frame | tk.Tk, videoName: str, dimensions: tuple[int], parameterFunction: function, cropFunction: function, nextFunction: function, startTrackFunction: function) -> None:
         """
         Initializes the ControlBar object with the given Tkinter root.
         parameters:
             root: The Tkinter root window.
+            videoName: The name of the video this bar controls
+            dimensions: The dimensions of the video
+            parameterFunction: The function that updates the video's ball tracking parameters
+            cropFunction: The function that updates the video's crop region
+            startTrackFunction: the function that initiates ball tracking on the video
         """
         self._root = root
         self._frame = tk.Frame(root)
@@ -267,7 +286,7 @@ class VideoControlBar:
         playbackFrame.pack(side=tk.LEFT, fill=tk.X, padx=25)
 
     
-    def getFrame(self):
+    def getFrame(self) -> tk.Frame:
         """
         Returns the frame containing the control bar.
         """
