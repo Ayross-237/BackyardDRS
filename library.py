@@ -5,6 +5,15 @@ class View(Enum):
     FRONT = 1
     SIDE = 2
 
+class Parameter(Enum):
+    BLUR_SQR_SIZE = "Blur Square Size"
+    DP = "DP"
+    MIN_DIST = "Min Distance"
+    MIN_RADIUS = "Min Radius"
+    MAX_RADIUS = "Max Radius"
+    PARAM1 = "Param1"
+    PARAM2 = "Param2"
+
 @dataclass
 class Parameters:
     blurSqrSize: int

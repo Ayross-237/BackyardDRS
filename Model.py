@@ -24,6 +24,7 @@ class Video:
         self._firstValidFrame = None
         self._frames = []
         self._points = []
+        self._cropRegion = ((0, 0), self.getDimensions())
         self._params = defaultParameters()
 
     def getDimensions(self) -> tuple[int, int]:
@@ -69,6 +70,25 @@ class Video:
         Returns a copy of the list of tracked ball positions.
         """
         return self._points.copy()
+    
+    def getCropRegion(self) -> tuple[tuple[int, int], tuple[int, int]]:
+        """
+        Returns the current crop region for the video frames.
+
+        returns:
+            tuple[tuple[int, int], tuple[int, int]]: Top-left and bottom-right coordinates of the crop region.
+        """
+        return self._cropRegion
+    
+    def cropToRegion(self, topLeft: tuple[int, int], bottomRight: tuple[int, int]) -> None:
+        """
+        Sets the crop region for the video frames.
+
+        parameters:
+            topLeft (tuple[int, int]): Top-left coordinates of the crop region.
+            bottomRight (tuple[int, int]): Bottom-right coordinates of the crop region.
+        """
+        self._cropRegion = (topLeft, bottomRight)
 
     def incrementFrame(self) -> bool:
         """
@@ -96,7 +116,8 @@ class Video:
         prevCircle = self._points[-1] if len(self._points) > 0 else None
 
         # Split the frame into its color channels and apply Gaussian blur
-        b, g, r = cv.split(self._curFrame)
+        cropped = self._curFrame[self._cropRegion[0][1]:self._cropRegion[1][1], self._cropRegion[0][0]:self._cropRegion[1][0]]
+        b, g, r = cv.split(cropped)
         blur = cv.GaussianBlur(r, (self._params.blurSqrSize, self._params.blurSqrSize), 0)
 
         # Detect circles in the blurred image using HoughCircles
@@ -119,7 +140,11 @@ class Video:
             if prevCircle is not None:
                 if dist(chosen[0], chosen[1], prevCircle[0], prevCircle[1]) <= dist(i[0], i[1], prevCircle[0], prevCircle[1]):
                     chosen = i
-        self._points.append(chosen[:3])
+        
+        adjustedX = chosen[0] + self._cropRegion[0][0]
+        adjustedY = chosen[1] + self._cropRegion[0][1]
+        chosen = (adjustedX, adjustedY, chosen[2])
+        self._points.append(chosen)
         
     def updateParameters(self, params: Parameters) -> None:
         """
@@ -130,7 +155,6 @@ class Video:
         """
         self._params = params
         self._points = []
-        print(self._firstValidFrame, len(self._frames))
         if self._firstValidFrame is not None:
             for i in range(self._firstValidFrame, len(self._frames)):
                 self._curFrame = self._frames[i]
