@@ -43,7 +43,7 @@ class VideoView:
         """
         return self._label
 
-    def updateFrame(self, frame, circles: list[tuple[int]]=[], cropRegion: tuple[tuple[int]]=None) -> None:
+    def updateFrame(self, frame, circles: list[tuple[int]]=[], cropRegion: tuple[tuple[int]]=None, verticalLines: list[int]=[]) -> None:
         """
         Updates the displayed frame in the GUI.
         parameters:
@@ -55,6 +55,8 @@ class VideoView:
             cv.circle(frame, (circle[0], circle[1]), circle[2], (0, 0, 255), 2)
         if cropRegion is not None:
             cv.rectangle(frame, cropRegion[0], cropRegion[1], (255, 255, 255), 2)
+        for line in verticalLines:
+            cv.line(frame, (line, 0), (line, len(frame)), (0, 0, 255), 3)
         
         frame = cv.resize(frame, (self._width, self._height), interpolation=cv.INTER_AREA)
         frame = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
@@ -86,6 +88,11 @@ class Slider:
         self._scale.set(default)
         self._scale.pack(side=tk.TOP)
         
+    def setValue(self, value: float) -> None:
+        """
+        Sets the value of the slider the value provided.
+        """
+        self._scale.set(value)
 
     def getFrame(self) -> tk.Frame:
         """
@@ -201,14 +208,18 @@ class CropControlBar:
         self._right.getFrame().pack(side=tk.LEFT)
 
         def crop():
-            try:
-                left = int(self._left.getValue())
-                top = int(self._top.getValue())
-                right = int(self._right.getValue())
-                bottom = int(self._bottom.getValue())
+            left = int(self._left.getValue())
+            top = int(self._top.getValue())
+            right = int(self._right.getValue())
+            bottom = int(self._bottom.getValue())
+            if right >= left and bottom >= top:
                 setCropFunction((left, top), (right, bottom))
-            except ValueError:
-                messagebox.showerror("Invalid Input", "Please enter valid integer values for crop coordinates.")
+            elif bottom < top:
+                messagebox.showerror("Invalid Crop", "Bottom crop coordinate must be greater than or equal to top crop coordinate")
+                self._bottom.setValue(top)
+            else:
+                messagebox.showerror("Invalid Crop", "Right crop coordinate must be greater than or equal to left crop coordinate")
+                self._right.setValue(left)
 
         self._top.onChange(crop)
         self._left.onChange(crop)
@@ -293,7 +304,7 @@ class VideoControlBar:
         return self._frame
 
 class MasterControlBar:
-    def __init__(self, root, makePredictionFunction, linkFunction):
+    def __init__(self, root, makePredictionFunction, linkFunction, setStumpFunction, sideVideoDimensions):
         """
         Initializes the MasterControlBar object with the given Tkinter root.
         parameters:
@@ -301,6 +312,11 @@ class MasterControlBar:
         """
         self._root = root
         self._frame = tk.Frame(root)
+
+        self._stumpFunction = setStumpFunction
+        self._stumpSlider = Slider(self._frame, "Stump Position", 0, sideVideoDimensions[0], 1, 0, orient=tk.HORIZONTAL)
+        self._stumpSlider.onChange(self._setStumpPos)
+        self._stumpSlider.getFrame().pack(side=tk.LEFT)
 
         predictButton = tk.Button(self._frame, text="Make Prediction", command=makePredictionFunction)
         predictButton.pack(side=tk.LEFT)
@@ -313,5 +329,8 @@ class MasterControlBar:
         Returns the frame containing the master control bar.
         """
         return self._frame
+
+    def _setStumpPos(self) -> None:
+        self._stumpFunction(self._stumpSlider.getValue())
 
 

@@ -1,5 +1,6 @@
 import cv2 as cv
 import numpy as np
+from scipy.optimize import curve_fit
 from dataclasses import dataclass
 from library import *
 
