@@ -263,16 +263,55 @@ class Model:
             
             fast.incrementFrame()
             self._framesSinceLink[fast] += 1
-            if self._framesSinceLink[fast] / self._framesSinceLink[slow] < FPSRatio:
+            if self._framesSinceLink[fast] > FPSRatio * self._framesSinceLink[slow]:
                 slow.incrementFrame()
                 self._framesSinceLink[slow] += 1
-
-        if view == View.FRONT:
+        elif view == View.FRONT:
             return self._frontVideo.incrementFrame()
         elif view == View.SIDE:
             return self._sideVideo.incrementFrame()
         return False
     
+    def cropRegion(self, view: View, topLeft: tuple[int, int], bottomRight: tuple[int, int]) -> None:
+        """
+        Sets the crop region for the specified video view.
+
+        parameters:
+            view (View): The video view to crop (FRONT or SIDE).
+            topLeft (tuple[int, int]): Top-left coordinates of the crop region.
+            bottomRight (tuple[int, int]): Bottom-right coordinates of the crop region.
+        """
+        if view == View.FRONT:
+            self._frontVideo.cropToRegion(topLeft, bottomRight)
+        elif view == View.SIDE:
+            self._sideVideo.cropToRegion(topLeft, bottomRight)
+        
+    def updateParameters(self, view: View, params: Parameters) -> None:
+        """
+        Updates the ball tracking parameters for the specified video view.
+
+        parameters:
+            view (View): The video view to update (FRONT or SIDE).
+            params (Parameters): New ball tracking parameters.
+        """
+        if view == View.FRONT:
+            self._frontVideo.updateParameters(params)
+        elif view == View.SIDE:
+            self._sideVideo.updateParameters(params)
+    
+    def markFirstFrame(self, view: View) -> bool:
+        """
+        Starts tracking the ball in the specified video view.
+
+        parameters:
+            view (View): The video view to start tracking (FRONT or SIDE).
+        """
+        if view == View.FRONT:
+            return self._frontVideo.markFirstFrame()
+        elif view == View.SIDE:
+            return self._sideVideo.markFirstFrame()
+        return False
+
     def makePrediction(self) -> tuple[int]:
         """
         Outputs the predicted line and height of the ball from the data collected from ball tracking.
@@ -288,6 +327,7 @@ class Model:
         numFrames = self._requiredFramesForPrediction()
         line = self._predictLine(int(numFrames * self._frontVideo.getFPS() / self._sideVideo.getFPS()))
         height = self._predictHeight(numFrames)
+        print(line, height)
         return (line, height)
 
     def _requiredFramesForPrediction(self) -> int:
@@ -339,7 +379,10 @@ class Model:
     
     def _findBounceFrame(self, points: list[list[int]]) -> int:
         """
-        Finds the frame number of the first bounce in the front video.
+        Finds the first frame after the ball bounce based on the tracked points.
+
+        parameters:
+            points (list[list[int]]): List of tracked ball positions.
         """
         for i in range(1, len(points)-1):
             if points[i][1] > points[i-1][1] and points[i][1] > points[i+1][1]:
