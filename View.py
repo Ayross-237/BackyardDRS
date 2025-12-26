@@ -129,8 +129,8 @@ class ParameterBar:
         (Parameter.MIN_DIST, 1, 500, 1),
         (Parameter.MIN_RADIUS, 1, 100, 1),
         (Parameter.MAX_RADIUS, 1, 100, 1),
-        (Parameter.PARAM1, 1, 300, 1),
-        (Parameter.PARAM2, 1, 300, 1)
+        (Parameter.PARAM1, 1, 200, 1),
+        (Parameter.PARAM2, 1, 50, 1)
     ]
 
     def __init__(self, root: tk.Frame | tk.Tk, parameters: Parameters, function):
@@ -212,14 +212,16 @@ class CropControlBar:
             top = int(self._top.getValue())
             right = int(self._right.getValue())
             bottom = int(self._bottom.getValue())
-            if right >= left and bottom >= top:
-                setCropFunction((left, top), (right, bottom))
-            elif bottom < top:
+
+            if bottom < top:
                 messagebox.showerror("Invalid Crop", "Bottom crop coordinate must be greater than or equal to top crop coordinate")
                 self._bottom.setValue(top)
-            else:
+                bottom = top
+            elif right < left:
                 messagebox.showerror("Invalid Crop", "Right crop coordinate must be greater than or equal to left crop coordinate")
                 self._right.setValue(left)
+                right = left
+            setCropFunction((left, top), (right, bottom))
 
         self._top.onChange(crop)
         self._left.onChange(crop)

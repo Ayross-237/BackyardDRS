@@ -26,11 +26,10 @@ class Parameters:
 
 @dataclass
 class Render:
-    frontFrame: any
-    sideFrame: any
-    frontPoints: list[tuple[int]]
-    sidePoints: list[tuple[int]]
-    stumpPosition: int | None
+    frame: any
+    circles: list[tuple[int, int, int]]
+    cropRegion: tuple[tuple[int, int], tuple[int, int]]
+    verticalLines: list[int]
 
 def defaultParameters() -> Parameters:
     """
@@ -50,3 +49,12 @@ def defaultParameters() -> Parameters:
     )
 
 dist = lambda x1,x2,y1,y2: (x1-x2)**2 + (y1-y2)**2
+
+def linear(xs: list[float], m: float, c: float) -> list[float]:
+    return [m*x + c for x in xs]
+
+def linearInverse(ys: list[float], m: float, c: float) -> list[float]:
+    return [(y - c) / m for y in ys]
+
+def quadratic(xs: list[float], a: float, b: float, c: float) -> list[float]:
+    return [a*(x**2) + b*x + c for x in xs]

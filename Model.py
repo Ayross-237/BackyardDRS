@@ -90,6 +90,7 @@ class Video:
             bottomRight (tuple[int, int]): Bottom-right coordinates of the crop region.
         """
         self._cropRegion = (topLeft, bottomRight)
+        self._recalculatePoints()
 
     def incrementFrame(self) -> bool:
         """
@@ -116,7 +117,7 @@ class Video:
         """
         prevCircle = self._points[-1] if len(self._points) > 0 else None
         if prevCircle:
-            prevCircle = (prevCircle[0] - self._cropRegion[0][0], prevCircle[1] - self._cropRegion[0][1], prevCircle[2])
+            prevCircle = (prevCircle[0] - self._cropRegion[0][0], prevCircle[1] - self._cropRegion[0][1], prevCircle[2], prevCircle[3])
 
 
         # Split the frame into its color channels and apply Gaussian blur
@@ -150,7 +151,7 @@ class Video:
         # Account for the fact that only a cropped image is used in the algorithm
         adjustedX = chosen[0] + self._cropRegion[0][0]
         adjustedY = chosen[1] + self._cropRegion[0][1]
-        chosen = (adjustedX, adjustedY, chosen[2])
+        chosen = (adjustedX, adjustedY, chosen[2], len(self._frames))
         self._points.append(chosen)
         
     def updateParameters(self, params: Parameters) -> None:
@@ -161,6 +162,13 @@ class Video:
             params (Parameters): New ball tracking parameters.
         """
         self._params = params
+        self._points = []
+        self._recalculatePoints()
+    
+    def _recalculatePoints(self) -> None:
+        """
+        Recalculates all tracked ball positions based on the current parameters.
+        """
         self._points = []
         if self._firstValidFrame is not None:
             for i in range(self._firstValidFrame, len(self._frames)):
@@ -203,25 +211,38 @@ class Model:
         """
         self._isLinked = True
     
-    def startTracking(self) -> None:
+    def startTracking(self, view: View) -> bool:
         """
         Starts the ball tracking process for both video views.
         """
-        self._frontVideo.markFirstFrame()
-        self._sideVideo.markFirstFrame()
+        if self._isLinked:
+            return self._frontVideo.markFirstFrame() and self._sideVideo.markFirstFrame()
+        elif view == View.FRONT:
+            return self._frontVideo.markFirstFrame()
+        elif view == View.SIDE:
+            return self._frontVideo.markFirstFrame()
+        return False
     
-    def render(self) -> Render:
+    def render(self) -> dict[View, Render]:
         """
         Renders the current frames and ball tracking points from both video views.
 
         returns:
             Render: A Render object containing the current frames and ball tracking points.
         """
-        frontFrame = self._frontVideo.getCurrentFrame()
-        sideFrame = self._sideVideo.getCurrentFrame()
-        frontPoints = self._frontVideo.getPoints()
-        sidePoints = self._sideVideo.getPoints()
-        return Render(frontFrame, sideFrame, frontPoints, sidePoints, self._stumpPosition)
+        frontRender = Render(
+            frame=self._frontVideo.getCurrentFrame(),
+            circles=self._frontVideo.getPoints(),
+            cropRegion=self._frontVideo.getCropRegion(),
+            verticalLines=[]
+        )
+        sideRender = Render(
+            frame=self._sideVideo.getCurrentFrame(),
+            circles=self._sideVideo.getPoints(),
+            cropRegion=self._sideVideo.getCropRegion(),
+            verticalLines=[self._stumpPosition] if self._stumpPosition is not None else []
+        )
+        return {View.FRONT: frontRender, View.SIDE: sideRender}
 
     def incrementFrame(self, view: View) -> bool:
         """
@@ -261,7 +282,67 @@ class Model:
             raise ValueError("Stump position must be set.")
         if self._isLinked == False:
             raise ValueError("Must link videos before predicting.")
+        if len(self._frontVideo.getPoints()) < 2 or len(self._sideVideo.getPoints()) < 3:
+            raise ValueError("Not enough points to make prediction.")
         
-        return (0, 0)
+        numFrames = self._requiredFramesForPrediction()
+        line = self._predictLine(int(numFrames * self._frontVideo.getFPS() / self._sideVideo.getFPS()))
+        height = self._predictHeight(numFrames)
+        return (line, height)
+
+    def _requiredFramesForPrediction(self) -> int:
+        """
+        Returns the number of frames required from the side video to make a prediction.
+        """
+        sidePoints = self._sideVideo.getPoints()
+        xs = [sidePoints[i][0] for i in range(len(sidePoints))]
+        frames = [sidePoints[i][3] for i in range(len(sidePoints))]
+
+        if len(xs) < 2:
+            raise ValueError("Not enough points to make a prediction.")
+
+        lineParams, _ = curve_fit(linear, frames, xs)
+        predictedFrames = linearInverse([self._stumpPosition], *lineParams)
+        return predictedFrames[0] - frames[-1]
+
+    def _predictLine(self, numFrames: int) -> int:
+        """
+        Returns the predicted line of the ball as viewed from the front angle, giving the expected vertical line
+        """
+        frontPoints = self._frontVideo.getPoints()
+        bounce = self._findBounceFrame(frontPoints)
+        xs = [frontPoints[i][0] for i in range(bounce, len(frontPoints))]
+        frames = [frontPoints[i][3] for i in range(bounce, len(frontPoints))]
+
+        if len(xs) < 2:
+            raise ValueError("Not enough points after bounce to make line prediction.")
+    
+        lineParams, _ = curve_fit(linear, frames, xs)
+        prediction = linear([frames[-1] + numFrames], *lineParams)
+        return int(prediction[0])
+    
+    def _predictHeight(self, numFrames: int) -> int:
+        """
+        Returns the predicted height of the ball as viewed from the side angle, giving the expected height above ground.
+        """
+        sidePoints = self._sideVideo.getPoints()
+        bounce = self._findBounceFrame(sidePoints)
+        ys = [sidePoints[i][1] for i in range(bounce, len(sidePoints))]
+        frames = [sidePoints[i][3] for i in range(bounce, len(sidePoints))]
+
+        if len(ys) < 3:
+            raise ValueError("Not enough points to make height prediction.")
         
+        heightParams, _ = curve_fit(quadratic, frames, ys)
+        prediction = quadratic([frames[-1] + numFrames], *heightParams)
+        return int(prediction[0])
+    
+    def _findBounceFrame(self, points: list[list[int]]) -> int:
+        """
+        Finds the frame number of the first bounce in the front video.
+        """
+        for i in range(1, len(points)-1):
+            if points[i][1] > points[i-1][1] and points[i][1] > points[i+1][1]:
+                return i
+        return 0
 
