@@ -1,5 +1,6 @@
 import cv2 as cv
 import numpy as np
+import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 from dataclasses import dataclass
 from library import *
@@ -151,7 +152,7 @@ class Video:
         # Account for the fact that only a cropped image is used in the algorithm
         adjustedX = chosen[0] + self._cropRegion[0][0]
         adjustedY = chosen[1] + self._cropRegion[0][1]
-        chosen = (adjustedX, adjustedY, chosen[2], len(self._frames))
+        chosen = (adjustedX, adjustedY, chosen[2], len(self._points))
         self._points.append(chosen)
         
     def updateParameters(self, params: Parameters) -> None:
@@ -263,7 +264,7 @@ class Model:
             
             fast.incrementFrame()
             self._framesSinceLink[fast] += 1
-            if self._framesSinceLink[fast] > FPSRatio * self._framesSinceLink[slow]:
+            if self._framesSinceLink[fast] >= FPSRatio * self._framesSinceLink[slow]:
                 slow.incrementFrame()
                 self._framesSinceLink[slow] += 1
         elif view == View.FRONT:
@@ -337,6 +338,9 @@ class Model:
         sidePoints = self._sideVideo.getPoints()
         xs = [sidePoints[i][0] for i in range(len(sidePoints))]
         frames = [sidePoints[i][3] for i in range(len(sidePoints))]
+        print(f"Side: {frames} {xs}")
+        plt.scatter(frames, xs)
+        plt.show()
 
         if len(xs) < 2:
             raise ValueError("Not enough points to make a prediction.")
@@ -353,6 +357,9 @@ class Model:
         bounce = self._findBounceFrame(frontPoints)
         xs = [frontPoints[i][0] for i in range(bounce, len(frontPoints))]
         frames = [frontPoints[i][3] for i in range(bounce, len(frontPoints))]
+        print(f"Line: {frames} {xs}")
+        plt.scatter(frames, xs)
+        plt.show()
 
         if len(xs) < 2:
             raise ValueError("Not enough points after bounce to make line prediction.")
@@ -369,6 +376,9 @@ class Model:
         bounce = self._findBounceFrame(sidePoints)
         ys = [sidePoints[i][1] for i in range(bounce, len(sidePoints))]
         frames = [sidePoints[i][3] for i in range(bounce, len(sidePoints))]
+        print(f"Height: {frames} {ys}")
+        plt.scatter(frames, ys)
+        plt.show()
 
         if len(ys) < 3:
             raise ValueError("Not enough points to make height prediction.")
@@ -384,8 +394,9 @@ class Model:
         parameters:
             points (list[list[int]]): List of tracked ball positions.
         """
+        maximum = max([points[i][1] for i in range(len(points))])
         for i in range(1, len(points)-1):
-            if points[i][1] > points[i-1][1] and points[i][1] > points[i+1][1]:
+            if points[i][1] == maximum:
                 return i
         return 0
 

@@ -4,23 +4,7 @@ from tkinter import messagebox
 from library import *
 from PIL import Image, ImageTk
 
-class FrameElement:
-    """
-    Abstract class representing a UI element that is built within a frame
-    """
-    def __init__(self, root: tk.Frame | tk.Tk) -> None:
-        """
-        Initialises the UI element frame
-        """
-        self._frame = tk.Frame(root)
-    
-    def getFrame(self) -> tk.Frame:
-        """
-        Returns the frame containing the UI element.
-        """
-        return self._frame
-
-class VideoView:
+class VideoView(tk.Label):
     """
     A class to handle the video display in a Tkinter GUI.
     """
@@ -32,16 +16,10 @@ class VideoView:
             width: The width of the UI element
             height: The height of the UI element
         """
+        super().__init__(root)
         self._width = width
         self._height = height
         self._root = root
-        self._label = tk.Label(root)
-    
-    def getLabel(self) -> tk.Label:
-        """
-        Returns the label containing the video frame.
-        """
-        return self._label
 
     def updateFrame(self, frame, circles: list[tuple[int]]=[], cropRegion: tuple[tuple[int]]=None, verticalLines: list[int]=[]) -> None:
         """
@@ -62,8 +40,8 @@ class VideoView:
         frame = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
         img = Image.fromarray(frame)
         imgtk = ImageTk.PhotoImage(image=img)
-        self._label.imgtk = imgtk 
-        self._label.configure(image=imgtk)
+        self.imgtk = imgtk 
+        self.configure(image=imgtk)
 
 
 class Slider:
