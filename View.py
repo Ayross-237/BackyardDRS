@@ -153,7 +153,7 @@ class ParameterBar(tk.Frame):
             param2=int(self._sliders[Parameter.PARAM2].getValue())
         )
 
-class CropControlBar:
+class CropControlBar(tk.Frame):
     def __init__(self, root: tk.Frame | tk.Tk, videoDimensions: tuple[int], setCropFunction) -> None:
         """
         Initializes the CropControlBar object with the given Tkinter root.
@@ -162,15 +162,15 @@ class CropControlBar:
             videoDimensions: The dimensions of the video being controlled
             setCropFunction: The function used to execute the crop on the video
         """
-        self._frame = tk.Frame(root)
+        super().__init__(root)
 
-        self._top = Slider(self._frame, "Top", 0, videoDimensions[1], 1, 0)
+        self._top = Slider(self, "Top", 0, videoDimensions[1], 1, 0)
         self._top.pack(side=tk.LEFT)
-        self._left = Slider(self._frame, "Left", 0, videoDimensions[0], 1, 0)
+        self._left = Slider(self, "Left", 0, videoDimensions[0], 1, 0)
         self._left.pack(side=tk.LEFT)
-        self._bottom = Slider(self._frame, "Bottom", 0, videoDimensions[1], 1, videoDimensions[1])
+        self._bottom = Slider(self, "Bottom", 0, videoDimensions[1], 1, videoDimensions[1])
         self._bottom.pack(side=tk.LEFT)
-        self._right = Slider(self._frame, "Right", 0, videoDimensions[0], 1, videoDimensions[0])
+        self._right = Slider(self, "Right", 0, videoDimensions[0], 1, videoDimensions[0])
         self._right.pack(side=tk.LEFT)
 
         def crop():
@@ -193,15 +193,9 @@ class CropControlBar:
         self._left.onChange(crop)
         self._bottom.onChange(crop)
         self._right.onChange(crop)
-    
-    def getFrame(self) -> tk.Frame:
-        """
-        Returns the frame containing the crop control bar.
-        """
-        return self._frame
 
 
-class PlaybackBar:
+class PlaybackBar(tk.Frame):
     def __init__(self, root: tk.Frame | tk.Tk, nextFunction, startTrackFunction) -> None:
         """
         Initializes the VideoControlBar object with the given Tkinter root.
@@ -210,19 +204,13 @@ class PlaybackBar:
             nextFunction: The funciton that moves to the next frame of the video
             startTrackFunction: The function that initiates ball tracking on the video
         """
-        self._frame = tk.Frame(root)
+        super().__init__(root)
 
-        nextButton = tk.Button(self._frame, text="Next Frame", command=nextFunction)
+        nextButton = tk.Button(self, text="Next Frame", command=nextFunction)
         nextButton.pack(side=tk.LEFT)
 
-        trackButton = tk.Button(self._frame, text="Start Tracking", command=startTrackFunction)
+        trackButton = tk.Button(self, text="Start Tracking", command=startTrackFunction)
         trackButton.pack(side=tk.LEFT)
-    
-    def getFrame(self):
-        """
-        Returns the frame containing the video control bar.
-        """
-        return self._frame
 
 
 class VideoControlBar:
@@ -253,7 +241,7 @@ class VideoControlBar:
         cropLabel = tk.Label(cropFrame, text="Crop Region:", font=("Arial", 12))
         cropLabel.pack(side=tk.TOP, fill=tk.X)
         cropBar = CropControlBar(cropFrame, dimensions, cropFunction)
-        cropBar.getFrame().pack(side=tk.TOP, fill=tk.X)
+        cropBar.pack(side=tk.TOP, fill=tk.X)
         cropLabel.pack(side=tk.TOP, fill=tk.X)
         cropFrame.pack(side=tk.LEFT, fill=tk.X, padx=25)
 
@@ -261,7 +249,7 @@ class VideoControlBar:
         playbackLabel = tk.Label(playbackFrame, text="Playback Controls:", font=("Arial", 12))
         playbackLabel.pack(side=tk.TOP, fill=tk.X)
         playbackBar = PlaybackBar(playbackFrame, nextFunction, startTrackFunction)
-        playbackBar.getFrame().pack(side=tk.TOP, fill=tk.BOTH)
+        playbackBar.pack(side=tk.TOP, fill=tk.BOTH)
         playbackFrame.pack(side=tk.LEFT, fill=tk.X, padx=25)
 
     
