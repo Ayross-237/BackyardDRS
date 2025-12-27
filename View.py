@@ -213,7 +213,7 @@ class PlaybackBar(tk.Frame):
         trackButton.pack(side=tk.LEFT)
 
 
-class VideoControlBar:
+class VideoControlBar(tk.Frame):
     def __init__(self, root: tk.Frame | tk.Tk, videoName: str, dimensions: tuple[int], parameterFunction, cropFunction, nextFunction, startTrackFunction) -> None:
         """
         Initializes the ControlBar object with the given Tkinter root.
@@ -225,19 +225,18 @@ class VideoControlBar:
             cropFunction: The function that updates the video's crop region
             startTrackFunction: the function that initiates ball tracking on the video
         """
-        self._root = root
-        self._frame = tk.Frame(root)
-        label = tk.Label(self._frame, text=videoName, font=("Arial", 16), bg="lightgrey", fg="black")
+        super().__init__(root)
+        label = tk.Label(self, text=videoName, font=("Arial", 16), bg="lightgrey", fg="black")
         label.pack(side=tk.TOP, fill=tk.X, expand=tk.TRUE)
 
-        parameterFrame = tk.Frame(self._frame)
+        parameterFrame = tk.Frame(self)
         parameterLabel = tk.Label(parameterFrame, text="Parameters:", font=("Arial", 12))
         parameterLabel.pack(side=tk.TOP, fill=tk.X)
         parameterBar = ParameterBar(parameterFrame, defaultParameters(), parameterFunction)
         parameterBar.pack(side=tk.TOP, fill=tk.X)
         parameterFrame.pack(side=tk.LEFT, fill=tk.X, padx=25)
 
-        cropFrame = tk.Frame(self._frame)
+        cropFrame = tk.Frame(self)
         cropLabel = tk.Label(cropFrame, text="Crop Region:", font=("Arial", 12))
         cropLabel.pack(side=tk.TOP, fill=tk.X)
         cropBar = CropControlBar(cropFrame, dimensions, cropFunction)
@@ -245,46 +244,33 @@ class VideoControlBar:
         cropLabel.pack(side=tk.TOP, fill=tk.X)
         cropFrame.pack(side=tk.LEFT, fill=tk.X, padx=25)
 
-        playbackFrame = tk.Frame(self._frame)
+        playbackFrame = tk.Frame(self)
         playbackLabel = tk.Label(playbackFrame, text="Playback Controls:", font=("Arial", 12))
         playbackLabel.pack(side=tk.TOP, fill=tk.X)
         playbackBar = PlaybackBar(playbackFrame, nextFunction, startTrackFunction)
         playbackBar.pack(side=tk.TOP, fill=tk.BOTH)
         playbackFrame.pack(side=tk.LEFT, fill=tk.X, padx=25)
 
-    
-    def getFrame(self) -> tk.Frame:
-        """
-        Returns the frame containing the control bar.
-        """
-        return self._frame
 
-class MasterControlBar:
+class MasterControlBar(tk.Frame):
     def __init__(self, root, makePredictionFunction, linkFunction, setStumpFunction, sideVideoDimensions):
         """
         Initializes the MasterControlBar object with the given Tkinter root.
         parameters:
             root: The Tkinter root window.
         """
-        self._root = root
-        self._frame = tk.Frame(root)
+        super().__init__(root)
 
         self._stumpFunction = setStumpFunction
-        self._stumpSlider = Slider(self._frame, "Stump Position", 0, sideVideoDimensions[0], 1, 0, orient=tk.HORIZONTAL)
+        self._stumpSlider = Slider(self, "Stump Position", 0, sideVideoDimensions[0], 1, 0, orient=tk.HORIZONTAL)
         self._stumpSlider.onChange(self._setStumpPos)
         self._stumpSlider.pack(side=tk.LEFT)
 
-        predictButton = tk.Button(self._frame, text="Make Prediction", command=makePredictionFunction)
+        predictButton = tk.Button(self, text="Make Prediction", command=makePredictionFunction)
         predictButton.pack(side=tk.LEFT)
 
-        linkButton = tk.Button(self._frame, text="Link Videos", command=linkFunction)
+        linkButton = tk.Button(self, text="Link Videos", command=linkFunction)
         linkButton.pack(side=tk.LEFT)
-    
-    def getFrame(self):
-        """
-        Returns the frame containing the master control bar.
-        """
-        return self._frame
 
     def _setStumpPos(self) -> None:
         self._stumpFunction(self._stumpSlider.getValue())
