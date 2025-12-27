@@ -91,7 +91,7 @@ class Slider(tk.Frame):
         self.function()
 
 
-class ParameterBar:
+class ParameterBar(tk.Frame):
     """
     A class to handle the parameter bar in a Tkinter GUI.
     """
@@ -111,23 +111,17 @@ class ParameterBar:
         parameters:
             root: The Tkinter root window.
         """
-        self._frame = tk.Frame(root)
+        super().__init__(root)
         self._sliders = {} 
 
         def onChange():
             function(self.getParameters())
 
         for param, from_, to, step in self.PARAMETERS:
-            slider = Slider(self._frame, param.value, from_, to, step, (to + from_) / 2)
+            slider = Slider(self, param.value, from_, to, step, (to + from_) / 2)
             slider.onChange(onChange)
             slider.pack(side=tk.LEFT, expand=tk.Y)
             self._sliders[param] = slider
-    
-    def getFrame(self) -> tk.Frame:
-        """
-        Returns the frame containing the parameter bar.
-        """
-        return self._frame
     
     def addSlider(self, label: str, from_:float, to: float, default: float, orient=tk.HORIZONTAL, function=None) -> None:
         """
@@ -138,7 +132,7 @@ class ParameterBar:
             to: The maximum value of the slider.
             orient: The orientation of the slider (default is HORIZONTAL).
         """
-        slider = Slider(self._frame, label, from_, to, default, orient)
+        slider = Slider(self, label, from_, to, default, orient)
         if function is not None:
             slider.onChange(function)
         slider.pack(side=tk.LEFT, expand=tk.Y)
@@ -252,7 +246,7 @@ class VideoControlBar:
         parameterLabel = tk.Label(parameterFrame, text="Parameters:", font=("Arial", 12))
         parameterLabel.pack(side=tk.TOP, fill=tk.X)
         parameterBar = ParameterBar(parameterFrame, defaultParameters(), parameterFunction)
-        parameterBar.getFrame().pack(side=tk.TOP, fill=tk.X)
+        parameterBar.pack(side=tk.TOP, fill=tk.X)
         parameterFrame.pack(side=tk.LEFT, fill=tk.X, padx=25)
 
         cropFrame = tk.Frame(self._frame)
