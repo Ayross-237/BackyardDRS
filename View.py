@@ -44,7 +44,7 @@ class VideoView(tk.Label):
         self.configure(image=imgtk)
 
 
-class Slider:
+class Slider(tk.Frame):
     def __init__(self, root: tk.Frame, label: str, from_:float, to: float, resolution: float, default: float, orient=tk.VERTICAL) -> None:
         """
         Initializes the Slider object with the given Tkinter root.
@@ -57,12 +57,12 @@ class Slider:
             default: The initial value on the slider
             orient: The orientation of the slider (default is HORIZONTAL).
         """
-        self._frame = tk.Frame(root)
+        super().__init__(root)
 
-        self._label = tk.Label(self._frame, text=label)
+        self._label = tk.Label(self, text=label)
         self._label.pack(side=tk.TOP, fill=tk.X, expand=tk.TRUE)
 
-        self._scale = tk.Scale(self._frame, orient=orient, length=100, from_=from_, to=to, resolution=resolution)
+        self._scale = tk.Scale(self, orient=orient, length=100, from_=from_, to=to, resolution=resolution)
         self._scale.set(default)
         self._scale.pack(side=tk.TOP)
         
@@ -71,12 +71,6 @@ class Slider:
         Sets the value of the slider the value provided.
         """
         self._scale.set(value)
-
-    def getFrame(self) -> tk.Frame:
-        """
-        Returns the frame containing the slider.
-        """
-        return self._frame
     
     def getValue(self) -> float:
         """
@@ -126,7 +120,7 @@ class ParameterBar:
         for param, from_, to, step in self.PARAMETERS:
             slider = Slider(self._frame, param.value, from_, to, step, (to + from_) / 2)
             slider.onChange(onChange)
-            slider.getFrame().pack(side=tk.LEFT, expand=tk.Y)
+            slider.pack(side=tk.LEFT, expand=tk.Y)
             self._sliders[param] = slider
     
     def getFrame(self) -> tk.Frame:
@@ -147,7 +141,7 @@ class ParameterBar:
         slider = Slider(self._frame, label, from_, to, default, orient)
         if function is not None:
             slider.onChange(function)
-        slider.getFrame().pack(side=tk.LEFT, expand=tk.Y)
+        slider.pack(side=tk.LEFT, expand=tk.Y)
     
     def getParameters(self) -> Parameters:
         """
@@ -177,13 +171,13 @@ class CropControlBar:
         self._frame = tk.Frame(root)
 
         self._top = Slider(self._frame, "Top", 0, videoDimensions[1], 1, 0)
-        self._top.getFrame().pack(side=tk.LEFT)
+        self._top.pack(side=tk.LEFT)
         self._left = Slider(self._frame, "Left", 0, videoDimensions[0], 1, 0)
-        self._left.getFrame().pack(side=tk.LEFT)
+        self._left.pack(side=tk.LEFT)
         self._bottom = Slider(self._frame, "Bottom", 0, videoDimensions[1], 1, videoDimensions[1])
-        self._bottom.getFrame().pack(side=tk.LEFT)
+        self._bottom.pack(side=tk.LEFT)
         self._right = Slider(self._frame, "Right", 0, videoDimensions[0], 1, videoDimensions[0])
-        self._right.getFrame().pack(side=tk.LEFT)
+        self._right.pack(side=tk.LEFT)
 
         def crop():
             left = int(self._left.getValue())
@@ -296,7 +290,7 @@ class MasterControlBar:
         self._stumpFunction = setStumpFunction
         self._stumpSlider = Slider(self._frame, "Stump Position", 0, sideVideoDimensions[0], 1, 0, orient=tk.HORIZONTAL)
         self._stumpSlider.onChange(self._setStumpPos)
-        self._stumpSlider.getFrame().pack(side=tk.LEFT)
+        self._stumpSlider.pack(side=tk.LEFT)
 
         predictButton = tk.Button(self._frame, text="Make Prediction", command=makePredictionFunction)
         predictButton.pack(side=tk.LEFT)
