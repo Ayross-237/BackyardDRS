@@ -31,6 +31,16 @@ class Render:
     cropRegion: tuple[tuple[int, int], tuple[int, int]]
     verticalLines: list[int]
 
+@dataclass
+class Callbacks:
+    incrementFrame: callable
+    updateParameters: callable
+    cropRegion: callable
+    startTracking: callable
+    setStumpPosition: callable
+    makePrediction: callable
+    linkVideos: callable
+
 def defaultParameters() -> Parameters:
     """
     Returns a Parameters object with default values for ball tracking.

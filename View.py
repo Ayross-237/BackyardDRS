@@ -201,7 +201,7 @@ class PlaybackBar(tk.Frame):
         Initializes the VideoControlBar object with the given Tkinter root.
         parameters:
             root: The Tkinter root window.
-            nextFunction: The funciton that moves to the next frame of the video
+            nextFunction: The function that moves to the next frame of the video
             startTrackFunction: The function that initiates ball tracking on the video
         """
         super().__init__(root)
@@ -276,3 +276,73 @@ class MasterControlBar(tk.Frame):
         self._stumpFunction(self._stumpSlider.getValue())
 
 
+class VIEW:
+    def __init__(self, root: tk.Tk, frontDimensions: tuple[int], sideDimensions: tuple[int], callbacks: Callbacks) -> None:
+        """
+        Initializes the VideoView object with the given Tkinter root.
+        parameters:
+            root: The Tkinter root window.
+            width: The width of the UI element
+            height: The height of the UI element
+        """
+        root.title("Backyard DRS")
+        
+        self._frontView = VideoView(root, 540, 960)
+        self._frontView.pack(side=tk.LEFT)
+
+        rightFrame = tk.Frame(root)
+        rightFrame.pack(side=tk.LEFT, fill=tk.BOTH)
+        
+        self._sideView = VideoView(rightFrame, 960, 540)
+        self._sideView.pack(side=tk.TOP)
+
+        self._frontControlBar = VideoControlBar(
+            rightFrame,
+            "Front View",
+            frontDimensions,
+            lambda params: callbacks.updateParameters(View.FRONT, params),
+            lambda topLeft, bottomRight: callbacks.cropRegion(View.FRONT, topLeft, bottomRight),
+            lambda: callbacks.incrementFrame(View.FRONT),
+            lambda: callbacks.startTracking(View.FRONT)
+        )
+        self._frontControlBar.pack(side=tk.TOP, fill=tk.X)
+
+        self._sideControlBar = VideoControlBar(
+            rightFrame,
+            "Side View",
+            sideDimensions,
+            lambda params: callbacks.updateParameters(View.SIDE, params),
+            lambda topLeft, bottomRight: callbacks.cropRegion(View.SIDE, topLeft, bottomRight),
+            lambda: callbacks.incrementFrame(View.SIDE),
+            lambda: callbacks.startTracking(View.SIDE)
+        )
+        self._sideControlBar.pack(side=tk.TOP, fill=tk.X)
+
+        self._masterControlBar = MasterControlBar(
+            rightFrame,
+            callbacks.makePrediction,
+            callbacks.linkVideos,
+            callbacks.setStumpPosition,
+            sideDimensions
+        )
+        self._masterControlBar.pack(side=tk.TOP, fill=tk.X)
+    
+    def render(self, frontRender: Render, sideRender: Render) -> None:
+        """
+        Renders the given frames in the GUI.
+        parameters:
+            frontRender: The render data for the front view.
+            sideRender: The render data for the side view.
+        """
+        self._frontView.updateFrame(
+            frontRender.frame,
+            frontRender.circles,
+            frontRender.cropRegion,
+            frontRender.verticalLines
+        )
+        self._sideView.updateFrame(
+            sideRender.frame,
+            sideRender.circles,
+            sideRender.cropRegion,
+            sideRender.verticalLines
+        )
