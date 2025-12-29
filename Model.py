@@ -235,13 +235,13 @@ class Model:
             frame=self._frontVideo.getCurrentFrame(),
             circles=self._frontVideo.getPoints(),
             cropRegion=self._frontVideo.getCropRegion(),
-            verticalLines=[]
+            verticalLines=[],
         )
         sideRender = Render(
             frame=self._sideVideo.getCurrentFrame(),
             circles=self._sideVideo.getPoints(),
             cropRegion=self._sideVideo.getCropRegion(),
-            verticalLines=[self._stumpPosition] if self._stumpPosition is not None else []
+            verticalLines=[self._stumpPosition] if self._stumpPosition is not None else [],
         )
         return {View.FRONT: frontRender, View.SIDE: sideRender}
 
@@ -267,6 +267,7 @@ class Model:
             if self._framesSinceLink[fast] >= FPSRatio * self._framesSinceLink[slow]:
                 slow.incrementFrame()
                 self._framesSinceLink[slow] += 1
+            return True
         elif view == View.FRONT:
             return self._frontVideo.incrementFrame()
         elif view == View.SIDE:
@@ -357,7 +358,6 @@ class Model:
         bounce = self._findBounceFrame(frontPoints)
         xs = [frontPoints[i][0] for i in range(bounce, len(frontPoints))]
         frames = [frontPoints[i][3] for i in range(bounce, len(frontPoints))]
-        print(f"Line: {frames} {xs}")
         plt.scatter(frames, xs)
         plt.show()
 
@@ -376,7 +376,6 @@ class Model:
         bounce = self._findBounceFrame(sidePoints)
         ys = [sidePoints[i][1] for i in range(bounce, len(sidePoints))]
         frames = [sidePoints[i][3] for i in range(bounce, len(sidePoints))]
-        print(f"Height: {frames} {ys}")
         plt.scatter(frames, ys)
         plt.show()
 

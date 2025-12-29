@@ -96,13 +96,13 @@ class ParameterBar(tk.Frame):
     A class to handle the parameter bar in a Tkinter GUI.
     """
     PARAMETERS = [
-        (Parameter.BLUR_SQR_SIZE, 1, 33, 2),
-        (Parameter.DP, 0.5, 2.0, 0.01),
-        (Parameter.MIN_DIST, 1, 500, 1),
-        (Parameter.MIN_RADIUS, 1, 100, 1),
-        (Parameter.MAX_RADIUS, 1, 100, 1),
-        (Parameter.PARAM1, 1, 200, 1),
-        (Parameter.PARAM2, 1, 50, 1)
+        (Parameter.BLUR_SQR_SIZE, 1, 33, 2, 13),
+        (Parameter.DP, 0.5, 2.0, 0.01, 1.20),
+        (Parameter.MIN_DIST, 1, 500, 1, 100),
+        (Parameter.MIN_RADIUS, 1, 100, 1, 5),
+        (Parameter.MAX_RADIUS, 1, 100, 1, 35),
+        (Parameter.PARAM1, 1, 200, 1, 100),
+        (Parameter.PARAM2, 1, 50, 1, 20)
     ]
 
     def __init__(self, root: tk.Frame | tk.Tk, parameters: Parameters, function):
@@ -117,8 +117,8 @@ class ParameterBar(tk.Frame):
         def onChange():
             function(self.getParameters())
 
-        for param, from_, to, step in self.PARAMETERS:
-            slider = Slider(self, param.value, from_, to, step, (to + from_) / 2)
+        for param, from_, to, step, default in self.PARAMETERS:
+            slider = Slider(self, param.value, from_, to, step, default)
             slider.onChange(onChange)
             slider.pack(side=tk.LEFT, expand=tk.Y)
             self._sliders[param] = slider

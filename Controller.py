@@ -26,10 +26,6 @@ class Controller:
             linkVideos=self.linkVideos
         )
         self._view = VIEW(root, frontVideo.getDimensions(), sideVideo.getDimensions(), callbacks)
-
-        if not (self._model.incrementFrame(View.FRONT) and self._model.incrementFrame(View.SIDE)):
-            messagebox.showerror("Could not read", "Could not read from video files.")
-            quit()
         self.update_view()
     
     def update_view(self) -> None:
@@ -91,7 +87,21 @@ class Controller:
             output = self._model.makePrediction()
         except ValueError as e:
             messagebox.showerror("Could not make prediction: ", str(e))
-        return output
+            return
+        
+        renders = self._model.render()
+        frontRender = renders[View.FRONT]
+        frontRender.circles=[]
+        frontRender.cropRegion=None
+        frontRender.verticalLines=[output[0]]
+
+        sideRender = renders[View.SIDE]
+        sideRender.circles=[]
+        sideRender.cropRegion=None
+        sideRender.verticalLines=[]
+        sideRender.horizontalLines=[output[1]]
+        
+        self._view.render(frontRender, sideRender)
 
     def linkVideos(self) -> None:
         """
