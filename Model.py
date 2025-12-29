@@ -399,4 +399,3 @@ class Model:
             if points[i][1] == maximum:
                 return i
         return 0
-
