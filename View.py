@@ -45,7 +45,7 @@ class VideoView(tk.Label):
 
 
 class Slider(tk.Frame):
-    def __init__(self, root: tk.Frame, label: str, from_:float, to: float, resolution: float, default: float, orient=tk.VERTICAL) -> None:
+    def __init__(self, root: tk.Frame, label: str, from_:float, to: float, resolution: float, default: float, orient=tk.VERTICAL, length=100) -> None:
         """
         Initializes the Slider object with the given Tkinter root.
         parameters:
@@ -62,7 +62,7 @@ class Slider(tk.Frame):
         self._label = tk.Label(self, text=label)
         self._label.pack(side=tk.TOP, fill=tk.X, expand=tk.TRUE)
 
-        self._scale = tk.Scale(self, orient=orient, length=100, from_=from_, to=to, resolution=resolution)
+        self._scale = tk.Scale(self, orient=orient, length=length, from_=from_, to=to, resolution=resolution)
         self._scale.set(default)
         self._scale.pack(side=tk.TOP)
         

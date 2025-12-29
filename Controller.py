@@ -98,9 +98,3 @@ class Controller:
         Links the side and front videos for synchronized playback.
         """
         self._model.linkVideos()
-
-root = tk.Tk()
-video = Video("Tests/5/ball.mp4", (255, 255, 255))
-side = Video("Tests/5/side.mp4", (255, 255, 255))
-controller = Controller(root, video, side)
-root.mainloop()
