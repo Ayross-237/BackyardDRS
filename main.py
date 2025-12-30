@@ -1,7 +1,6 @@
 from Model import *
 from View import *
 from Controller import *
-from tkinter import filedialog
 from tkinter import messagebox
 
 def getInitialInformation() -> tuple[str, str, tuple[int]]:
