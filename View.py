@@ -327,7 +327,7 @@ class VIEW:
             callbacks.setStumpPosition,
             sideDimensions
         )
-        self._masterControlBar.pack(side=tk.TOP, fill=tk.X)
+        self._masterControlBar.pack(side=tk.TOP)
     
     def render(self, frontRender: Render, sideRender: Render) -> None:
         """

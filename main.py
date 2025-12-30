@@ -4,56 +4,74 @@ from Controller import *
 from tkinter import filedialog
 from tkinter import messagebox
 
-def browse_file(entry: tk.Entry) -> None:
+class FileChooser(tk.Frame):
     """
-    Opens a file dialog to select a file and updates the given entry with the selected file path.
+    A Tkinter frame that allows the user to choose a file path.
     """
-    file_path = filedialog.askopenfilename()
-    if file_path:
-        entry.delete(0, tk.END)
-        entry.insert(0, file_path)
+    def __init__(self, root: tk.Tk, label_text: str) -> None:
+        """
+        Initializes the FileChooser frame.
+        Args:
+            root (tk.Tk): The Tkinter root window.
+            label_text (str): The text for the label.
+        """
+        super().__init__(root)
 
-def filePathEntry(root: tk.Tk, label_text: str) -> tk.Entry:
-    """
-    Creates a file path entry with a label and a browse button.
-    """
-    frame = tk.Frame(root)
-    frame.pack(side=tk.TOP, padx=5, pady=5, expand=True)
+        self.label = tk.Label(self, text=label_text)
+        self.label.pack(side=tk.TOP, pady=5, expand=True, fill=tk.X)
 
-    label = tk.Label(frame, text=label_text)
-    label.pack(side=tk.TOP, pady=5, expand=True, fill=tk.X)
+        self._entry = tk.Entry(self, width=50)
+        self._entry.pack(side=tk.LEFT, padx=5, pady=5)
 
-    entry = tk.Entry(frame, width=50)
-    entry.pack(side=tk.LEFT, padx=5, pady=5)
+        self.browse_button = tk.Button(self, text="Browse", command=self._browse_file)
+        self.browse_button.pack(side=tk.LEFT, padx=5, pady=5)
 
-    browse_button = tk.Button(frame, text="Browse", command=lambda: browse_file(entry))
-    browse_button.pack(side=tk.LEFT, padx=5, pady=5)
-    return entry
-
-def colourSlider(root: tk.Tk, label: str) -> tk.Scale:
-    """
-    Creates a colour slider for selecting RGB values.
-    """
-    return tk.Scale(root, from_=0, to=255, resolution=1, orient=tk.VERTICAL, label=label, length=75)
+    def _browse_file(self) -> None:
+        """
+        Opens a file dialog to select a file and updates the entry with the selected file path.
+        """
+        file_path = filedialog.askopenfilename()
+        if file_path:
+            self._entry.delete(0, tk.END)
+            self._entry.insert(0, file_path)
     
-def ballColourSlider(root: tk.Tk, label: str) -> tk.Scale:
+    def getFilePath(self) -> str:
+        """
+        Returns the file path from the entry.
+        """
+        return self._entry.get()
+
+class BallColourSlider(tk.Frame):
     """
-    Creates a set of three colour sliders for selecting the RGB values of the ball colour.
+    A Tkinter frame that contains three sliders for selecting RGB values.
     """
-    frame = tk.Frame(root)
-    frame.pack(side=tk.TOP, padx=10, pady=5, expand=True)
+    def __init__(self, root: tk.Tk, label_text: str) -> None:
+        """
+        Initializes the BallColourSlider frame.
+        Args:
+            root (tk.Tk): The Tkinter root window.
+            label_text (str): The text for the label.
+        """
+        super().__init__(root)
 
-    sliderLabel = tk.Label(frame, text=label)
-    sliderLabel.pack(side=tk.TOP, padx=10, pady=5, expand=True)
+        self.label = tk.Label(self, text=label_text)
+        self.label.pack(side=tk.TOP, pady=5, expand=True, fill=tk.X)
 
-    red = colourSlider(frame, "Red")
-    red.pack(side=tk.LEFT, padx=10, pady=10)
-    green = colourSlider(frame, "Green")
-    green.pack(side=tk.LEFT, padx=10, pady=10)
-    blue = colourSlider(frame, "Blue")
-    blue.pack(side=tk.LEFT, padx=10, pady=10)
+        self.red_slider = tk.Scale(self, from_=0, to=255, resolution=1, orient=tk.VERTICAL, label="Red", length=75)
+        self.red_slider.pack(side=tk.LEFT, padx=5, pady=5)
 
-    return (red, green, blue)
+        self.green_slider = tk.Scale(self, from_=0, to=255, resolution=1, orient=tk.VERTICAL, label="Green", length=75)
+        self.green_slider.pack(side=tk.LEFT, padx=5, pady=5)
+
+        self.blue_slider = tk.Scale(self, from_=0, to=255, resolution=1, orient=tk.VERTICAL, label="Blue", length=75)
+        self.blue_slider.pack(side=tk.LEFT, padx=5, pady=5)
+
+    def getColour(self) -> tuple[int]:
+        """
+        Returns the selected RGB colour as a tuple.
+        """
+        return (self.red_slider.get(), self.green_slider.get(), self.blue_slider.get())
+
 
 def getInitialInformation() -> tuple[str, str, tuple[int]]:
     """
@@ -62,15 +80,23 @@ def getInitialInformation() -> tuple[str, str, tuple[int]]:
     root = tk.Tk()
     root.title("Backyard DRS")
 
-    front = filePathEntry(root, "Front Video Path:")
-    side = filePathEntry(root, "Side Video Path:")
+    front = FileChooser(root, "Front Video Path:")
+    front.pack(side=tk.TOP, padx=10, pady=10, expand=True)
+    side = FileChooser(root, "Side Video Path:")
+    side.pack(side=tk.TOP, padx=10, pady=10, expand=True)
 
-    r, g, b = ballColourSlider(root, "Select Ball Colour:")
+    ballColourSlider = BallColourSlider(root, "Select Ball Colour:")
+    ballColourSlider.pack(side=tk.TOP, padx=10, pady=10, expand=True)
 
     output = None
     def onSubmit():
         nonlocal output
-        output = parseInformation(root, front, side, r, g, b)
+        output = parseInformation(
+            front.getFilePath(),
+            side.getFilePath(),
+            ballColourSlider.getColour()
+        )
+        root.destroy()
 
     submitButton = tk.Button(root, text="Submit", command=onSubmit)
     submitButton.pack(side=tk.TOP, padx=10, pady=10, expand=True)
@@ -78,23 +104,18 @@ def getInitialInformation() -> tuple[str, str, tuple[int]]:
     root.mainloop()
     return output
 
-def parseInformation(root: tk.Tk, front: tk.Entry, side: tk.Entry, r: tk.Scale, g: tk.Scale, b: tk.Scale) -> tuple[str, str, tuple[int]]:
+def parseInformation(frontPath: str, sidePath: str, colour: tuple[int]) -> tuple[str, str, tuple[int]]:
     """
     Parses the information from the Tkinter window and returns it.
     Args:
-        root (tk.Tk): The Tkinter root window.
-        front (tk.Entry): The entry for the front video path.
-        side (tk.Entry): The entry for the side video path.
-        r (tk.Scale): The red colour slider.
-        g (tk.Scale): The green colour slider.
-        b (tk.Scale): The blue colour slider.
+        frontPath (str): The front video path.
+        sidePath (str): The side video path.
+        colour (tuple[int]): The RGB colour tuple.
     """
-    frontPath = front.get()
     if not frontPath:
         messagebox.showerror("Input Error", "Please provide a valid front video path.")
         return
     
-    sidePath = side.get()
     if not sidePath:
         messagebox.showerror("Input Error", "Please provide a valid side video path.")
         return
@@ -103,13 +124,9 @@ def parseInformation(root: tk.Tk, front: tk.Entry, side: tk.Entry, r: tk.Scale, 
         messagebox.showerror("Input Error", "Front and side video paths cannot be the same.")
         return
     
-    ballColour = (r.get(), g.get(), b.get())
-    root.destroy()
-    return (frontPath, sidePath, ballColour)
+    return (frontPath, sidePath, colour)
 
 if __name__ == "__main__":
-    vid = cv.VideoCapture("asdfasdfad")
-    vid.read()
     frontPath, sidePath, ballColour = getInitialInformation()
 
     frontVideo = Video(frontPath, ballColour)
