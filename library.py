@@ -27,10 +27,10 @@ class Parameters:
 @dataclass
 class Render:
     frame: any
-    circles: list[tuple[int, int, int]] = []
+    circles: list[tuple[int, int, int]] = ()
     cropRegion: tuple[tuple[int, int], tuple[int, int]] = None
-    verticalLines: list[int] = []
-    horizontalLines: list[int] = []
+    verticalLines: tuple[int] = ()
+    horizontalLines: list[int] = ()
 
 
 @dataclass

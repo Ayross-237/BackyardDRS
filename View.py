@@ -21,7 +21,7 @@ class VideoView(tk.Label):
         self._height = height
         self._root = root
 
-    def updateFrame(self, frame, circles: list[tuple[int]]=[], cropRegion: tuple[tuple[int]]=None, verticalLines: list[int]=[]) -> None:
+    def updateFrame(self, frame, circles: list[tuple[int]]=[], cropRegion: tuple[tuple[int]]=None, verticalLines: list[int]=[], horizontalLines=[]) -> None:
         """
         Updates the displayed frame in the GUI.
         parameters:
@@ -35,6 +35,8 @@ class VideoView(tk.Label):
             cv.rectangle(frame, cropRegion[0], cropRegion[1], (255, 255, 255), 2)
         for line in verticalLines:
             cv.line(frame, (line, 0), (line, len(frame)), (0, 0, 255), 3)
+        for line in horizontalLines:
+            cv.line(frame, (0, line), (len(frame[0]), line), (0, 0, 255), 3)
         
         frame = cv.resize(frame, (self._width, self._height), interpolation=cv.INTER_AREA)
         frame = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
@@ -338,11 +340,13 @@ class VIEW:
             frontRender.frame,
             frontRender.circles,
             frontRender.cropRegion,
-            frontRender.verticalLines
+            frontRender.verticalLines,
+            frontRender.horizontalLines
         )
         self._sideView.updateFrame(
             sideRender.frame,
             sideRender.circles,
             sideRender.cropRegion,
-            sideRender.verticalLines
+            sideRender.verticalLines,
+            sideRender.horizontalLines
         )
