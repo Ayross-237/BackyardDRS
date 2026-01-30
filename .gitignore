@@ -1,0 +1,16 @@
+env
+photos
+random
+Tests
+Videos
+__pycache__
+*.pyc
+calibrate.py
+certificate image.png
+data.png
+Demonstration.mp4
+Description.docx
+gpt.py
+main.spec
+scratchpad.ipynb
+UML.drawio

@@ -34,6 +34,7 @@ def getInitialInformation() -> tuple[str, str, tuple[int]]:
     root.mainloop()
     return output
 
+
 def parseInformation(frontPath: str, sidePath: str, colour: tuple[int]) -> tuple[str, str, tuple[int]]:
     """
     Parses the information from the Tkinter window and returns it.
@@ -56,6 +57,7 @@ def parseInformation(frontPath: str, sidePath: str, colour: tuple[int]) -> tuple
     
     return (frontPath, sidePath, colour)
 
+
 if __name__ == "__main__":
     frontPath, sidePath, ballColour = getInitialInformation()
 
@@ -65,7 +67,10 @@ if __name__ == "__main__":
             messagebox.showerror("Could not read", "Could not read from video files.")
             quit()
     
-    root = tk.Tk()
-    controller = Controller(root, frontVideo, sideVideo)
-    root.mainloop()
-
+    try:
+        root = tk.Tk()
+        controller = Controller(root, frontVideo, sideVideo)
+        root.mainloop()
+    except Exception as e:
+        root.destroy()
+        messagebox.showerror("Error", f"An unexpected error occurred: {e}")

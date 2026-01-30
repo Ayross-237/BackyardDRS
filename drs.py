@@ -58,8 +58,6 @@ while isTrue:
 
 cv.destroyAllWindows()
 cv.waitKey(0)
-side_cam.remove_outliers()
-remove_outliers(points)
 
 frames = [point[1] for point in points]
 xs = [point[0][0] for point in points]
