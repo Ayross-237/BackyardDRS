@@ -76,7 +76,10 @@ class Controller:
             self.update_view()
     
     def startTracking(self, view: View) -> None:
-        self._model.startTracking(view)
+        if self._model.startTracking(view):
+            messagebox.showinfo("Tracking Started", f"Started tracking in {view.name} video.")
+        else:
+            messagebox.showerror("Tracking Error", f"Already started tracking or no frames available in {view.name} video.")
     
     def makePrediction(self) -> tuple[int] | None:
         """

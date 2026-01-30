@@ -53,7 +53,7 @@ class Video:
         """
         Starts tracking the ball in the video.
         """
-        if len(self._frames) == 0:
+        if len(self._frames) == 0 or self._firstValidFrame is not None:
             return False
         self._firstValidFrame = len(self._frames) - 1
         return True
@@ -221,7 +221,7 @@ class Model:
         elif view == View.FRONT:
             return self._frontVideo.markFirstFrame()
         elif view == View.SIDE:
-            return self._frontVideo.markFirstFrame()
+            return self._sideVideo.markFirstFrame()
         return False
     
     def render(self) -> dict[View, Render]:
@@ -339,7 +339,6 @@ class Model:
         sidePoints = self._sideVideo.getPoints()
         xs = [sidePoints[i][0] for i in range(len(sidePoints))]
         frames = [sidePoints[i][3] for i in range(len(sidePoints))]
-        print(f"Side: {frames} {xs}")
         plt.scatter(frames, xs)
         plt.show()
 
