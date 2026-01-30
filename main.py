@@ -59,12 +59,16 @@ def parseInformation(frontPath: str, sidePath: str, colour: tuple[int]) -> tuple
 
 
 if __name__ == "__main__":
-    frontPath, sidePath, ballColour = getInitialInformation()
+    parameters = None
+    
+    while parameters is None:
+        parameters = getInitialInformation()
 
+    frontPath, sidePath, ballColour = parameters
     frontVideo = Video(frontPath, ballColour)
     sideVideo = Video(sidePath, ballColour)
     if not (frontVideo.incrementFrame() and sideVideo.incrementFrame()):
-            messagebox.showerror("Could not read", "Could not read from video files.")
+            messagebox.showerror("Read Error", "Could not read from video files.")
             quit()
     
     try:

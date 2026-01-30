@@ -101,8 +101,10 @@ class VideoView(tk.Label):
             circles: The circles to draw on the image
             cropRegion: The region which will be analysed for ball tracking
         """
+        # draw tracked ball positions
         for circle in circles:
             cv.circle(frame, (circle[0], circle[1]), circle[2], (0, 0, 255), 2)
+        # draw cropped region
         if cropRegion is not None:
             cv.rectangle(frame, cropRegion[0], cropRegion[1], (255, 255, 255), 2)
         for line in verticalLines:
