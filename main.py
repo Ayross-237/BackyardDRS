@@ -26,9 +26,10 @@ def getInitialInformation() -> tuple[str, str, tuple[int]]:
             side.getFilePath(),
             ballColourSlider.getColour()
         )
-        root.destroy()
+        if output is not None:
+            root.destroy()
 
-    submitButton = tk.Button(root, text="Submit", command=onSubmit)
+    submitButton = tk.Button(root, text="Launch", command=onSubmit)
     submitButton.pack(side=tk.TOP, padx=10, pady=10, expand=True)
 
     root.mainloop()
@@ -59,10 +60,11 @@ def parseInformation(frontPath: str, sidePath: str, colour: tuple[int]) -> tuple
 
 
 if __name__ == "__main__":
-    parameters = None
-    
-    while parameters is None:
-        parameters = getInitialInformation()
+    parameters = getInitialInformation()
+
+    # User quits the window
+    if parameters is None:
+        quit()
 
     frontPath, sidePath, ballColour = parameters
     frontVideo = Video(frontPath, ballColour)

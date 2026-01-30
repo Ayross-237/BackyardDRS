@@ -4,7 +4,11 @@ from tkinter import messagebox
 from tkinter import filedialog
 from library import *
 from PIL import Image, ImageTk
+from enum import IntEnum
 
+class FontSize(IntEnum):
+    BANNER = 15
+    HEADER = 12
 
 class FileChooser(tk.Frame):
     """
@@ -108,9 +112,9 @@ class VideoView(tk.Label):
         if cropRegion is not None:
             cv.rectangle(frame, cropRegion[0], cropRegion[1], (255, 255, 255), 2)
         for line in verticalLines:
-            cv.line(frame, (line, 0), (line, len(frame)), (0, 0, 255), 3)
+            cv.line(frame, (line, 0), (line, len(frame)), (0, 0, 255), 2)
         for line in horizontalLines:
-            cv.line(frame, (0, line), (len(frame[0]), line), (0, 0, 255), 3)
+            cv.line(frame, (0, line), (len(frame[0]), line), (0, 0, 255), 2)
         
         frame = cv.resize(frame, (self._width, self._height), interpolation=cv.INTER_AREA)
         frame = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
@@ -302,18 +306,18 @@ class VideoControlBar(tk.Frame):
             startTrackFunction: the function that initiates ball tracking on the video
         """
         super().__init__(root)
-        label = tk.Label(self, text=videoName, font=("Arial", 16), bg="lightgrey", fg="black")
+        label = tk.Label(self, text=videoName, font=("Arial", FontSize.BANNER), bg="lightgrey", fg="black")
         label.pack(side=tk.TOP, fill=tk.X, expand=tk.TRUE)
 
         parameterFrame = tk.Frame(self)
-        parameterLabel = tk.Label(parameterFrame, text="Parameters:", font=("Arial", 12))
+        parameterLabel = tk.Label(parameterFrame, text="Parameters", font=("Arial", FontSize.HEADER))
         parameterLabel.pack(side=tk.TOP, fill=tk.X)
         parameterBar = ParameterBar(parameterFrame, defaultParameters(), parameterFunction)
         parameterBar.pack(side=tk.TOP, fill=tk.X)
         parameterFrame.pack(side=tk.LEFT, fill=tk.X, padx=25)
 
         cropFrame = tk.Frame(self)
-        cropLabel = tk.Label(cropFrame, text="Crop Region:", font=("Arial", 12))
+        cropLabel = tk.Label(cropFrame, text="Crop Region", font=("Arial", FontSize.HEADER))
         cropLabel.pack(side=tk.TOP, fill=tk.X)
         cropBar = CropControlBar(cropFrame, dimensions, cropFunction)
         cropBar.pack(side=tk.TOP, fill=tk.X)
@@ -321,7 +325,7 @@ class VideoControlBar(tk.Frame):
         cropFrame.pack(side=tk.LEFT, fill=tk.X, padx=25)
 
         playbackFrame = tk.Frame(self)
-        playbackLabel = tk.Label(playbackFrame, text="Playback Controls:", font=("Arial", 12))
+        playbackLabel = tk.Label(playbackFrame, text="Playback Controls", font=("Arial", FontSize.HEADER))
         playbackLabel.pack(side=tk.TOP, fill=tk.X)
         playbackBar = PlaybackBar(playbackFrame, nextFunction, startTrackFunction)
         playbackBar.pack(side=tk.TOP, fill=tk.BOTH)
