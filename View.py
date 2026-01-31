@@ -149,9 +149,12 @@ class Slider(tk.Frame):
         self._scale.set(default)
         self._scale.pack(side=tk.TOP)
         
-    def setValue(self, value: float) -> None:
+    def setValue(self, value: float | int) -> None:
         """
         Sets the value of the slider the value provided.
+
+        Parameters:
+            value: The value to set the scale to
         """
         self._scale.set(value)
     
@@ -164,7 +167,7 @@ class Slider(tk.Frame):
     def onChange(self, function) -> None:
         """
         Sets a function to be called when the slider value changes.
-        parameters:
+        Parameters:
             function: The function to call when the slider value changes.
         """
         self.function = function
@@ -188,11 +191,12 @@ class ParameterBar(tk.Frame):
         (Parameter.PARAM2, 1, 50, 1, 20)
     ]
 
-    def __init__(self, root: tk.Frame | tk.Tk, parameters: Parameters, function):
+    def __init__(self, root: tk.Frame | tk.Tk, function) -> None:
         """
         Initializes the ParameterBar object with the given Tkinter root.
-        parameters:
+        Parameters:
             root: The Tkinter root window.
+            function: The function to call when the parameters change.
         """
         super().__init__(root)
         self._sliders = {} 
@@ -315,7 +319,7 @@ class VideoControlBar(tk.Frame):
         parameterFrame = tk.Frame(self)
         parameterLabel = tk.Label(parameterFrame, text="Parameters", font=("Arial", FontSize.HEADER))
         parameterLabel.pack(side=tk.TOP, fill=tk.X)
-        parameterBar = ParameterBar(parameterFrame, defaultParameters(), parameterFunction)
+        parameterBar = ParameterBar(parameterFrame, parameterFunction)
         parameterBar.pack(side=tk.TOP, fill=tk.X)
         parameterFrame.pack(side=tk.LEFT, fill=tk.X, padx=25)
 
@@ -349,11 +353,11 @@ class MasterControlBar(tk.Frame):
         self._stumpSlider.onChange(self._setStumpPos)
         self._stumpSlider.pack(side=tk.LEFT)
 
-        predictButton = tk.Button(self, text="Make Prediction", command=makePredictionFunction)
-        predictButton.pack(side=tk.LEFT)
-
         linkButton = tk.Button(self, text="Link Videos", command=linkFunction)
         linkButton.pack(side=tk.LEFT)
+
+        predictButton = tk.Button(self, text="Make Prediction", command=makePredictionFunction)
+        predictButton.pack(side=tk.LEFT)
 
     def _setStumpPos(self) -> None:
         self._stumpFunction(self._stumpSlider.getValue())
