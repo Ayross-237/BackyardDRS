@@ -329,7 +329,6 @@ class Model:
         numFrames = self._requiredFramesForPrediction()
         line = self._predictLine(int(numFrames * self._frontVideo.getFPS() / self._sideVideo.getFPS()))
         height = self._predictHeight(numFrames)
-        print(line, height)
         return (line, height)
 
     def _requiredFramesForPrediction(self) -> int:
@@ -340,6 +339,9 @@ class Model:
         xs = [sidePoints[i][0] for i in range(len(sidePoints))]
         frames = [sidePoints[i][3] for i in range(len(sidePoints))]
         plt.scatter(frames, xs)
+        plt.title("Progress of the ball vs Frames")
+        plt.xlabel("Frame Number")
+        plt.ylabel("x position of the ball (side view)")
         plt.show()
 
         if len(xs) < 2:
@@ -358,6 +360,9 @@ class Model:
         xs = [frontPoints[i][0] for i in range(bounce, len(frontPoints))]
         frames = [frontPoints[i][3] for i in range(bounce, len(frontPoints))]
         plt.scatter(frames, xs)
+        plt.title("Line of the ball vs Frames")
+        plt.xlabel("Frame Number")
+        plt.ylabel("x position of the ball (front view)")
         plt.show()
 
         if len(xs) < 2:
@@ -376,6 +381,9 @@ class Model:
         ys = [sidePoints[i][1] for i in range(bounce, len(sidePoints))]
         frames = [sidePoints[i][3] for i in range(bounce, len(sidePoints))]
         plt.scatter(frames, ys)
+        plt.title("Height of the ball vs Frames")
+        plt.xlabel("Frame Number")
+        plt.ylabel("y position of the ball (side view)")
         plt.show()
 
         if len(ys) < 3:
