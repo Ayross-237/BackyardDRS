@@ -69,6 +69,11 @@ class Controller:
         self.update_view()
     
     def setStumpPosition(self, position: int) -> None:
+        """
+        Sets the stump position in the side video.
+        Args:
+            position (int): The x-coordinate of the stump position.
+        """
         if position < 0 or position > self._sideDimensions[0]:
             messagebox.showerror("Invalid Position", "Stump position must be within the width of the side video.")
         else:
@@ -76,28 +81,36 @@ class Controller:
             self.update_view()
     
     def startTracking(self, view: View) -> None:
+        """
+        Starts ball tracking for the specified view (FRONT or SIDE).
+        Args:
+            view (View): The view to start tracking for.
+        """
         if self._model.startTracking(view):
             messagebox.showinfo("Tracking Started", f"Started tracking in {view.name} video.")
         else:
-            messagebox.showerror("Tracking Error", f"Already started tracking or no frames available in {view.name} video.")
+            messagebox.showerror("Tracking Error", f"Already started tracking or no frames available.")
     
-    def makePrediction(self) -> tuple[int] | None:
+    def makePrediction(self) -> None:
         """
-        Makes a prediction based on the tracked data.
+        Makes a prediction based on the tracked data and updates the View to display the results.
         """
         output = None
+        # Attempt to make prediction and handle potential errors
         try:
             output = self._model.makePrediction()
         except ValueError as e:
             messagebox.showerror("Could not make prediction: ", str(e))
             return
         
+        # Update the front view to draw the predicted line of the ball upon impact
         renders = self._model.render()
         frontRender = renders[View.FRONT]
         frontRender.circles=[]
         frontRender.cropRegion=None
         frontRender.verticalLines=[output[0]]
 
+        # Update the side view to draw the predicted height of the ball upon impact
         sideRender = renders[View.SIDE]
         sideRender.circles=[]
         sideRender.cropRegion=None
