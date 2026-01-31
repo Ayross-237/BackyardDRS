@@ -87,7 +87,7 @@ def main() -> None:
     # Run the program and display any unexpected errors.
     try:
         root = tk.Tk()
-        controller = Controller(root, frontVideo, sideVideo)
+        Controller(root, frontVideo, sideVideo)
         root.mainloop()
     except Exception as e:
         root.destroy()
