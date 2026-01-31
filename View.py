@@ -12,7 +12,7 @@ class FontSize(IntEnum):
 
 class FileChooser(tk.Frame):
     """
-    A Tkinter frame that allows the user to choose a file path.
+    A Tkinter frame that allows the user to choose a file path, which is held and displayed in an entry.
     """
     def __init__(self, root: tk.Tk, label_text: str) -> None:
         """
@@ -23,11 +23,12 @@ class FileChooser(tk.Frame):
         """
         super().__init__(root)
 
-        self.label = tk.Label(self, text=label_text)
-        self.label.pack(side=tk.TOP, pady=5, expand=True, fill=tk.X)
+        self.label = tk.Label(self, text=label_text, font=("Arial", FontSize.HEADER))
+        self.label.pack(side=tk.TOP, pady=5, expand=tk.TRUE, fill=tk.X)
 
         self._entry = tk.Entry(self, width=50)
-        self._entry.pack(side=tk.LEFT, padx=5, pady=5)
+        self._entry.config(state=tk.DISABLED)
+        self._entry.pack(side=tk.LEFT, padx=5, pady=5, expand=tk.TRUE, fill=tk.X)
 
         self.browse_button = tk.Button(self, text="Browse", command=self._browse_file)
         self.browse_button.pack(side=tk.LEFT, padx=5, pady=5)
@@ -38,8 +39,10 @@ class FileChooser(tk.Frame):
         """
         file_path = filedialog.askopenfilename()
         if file_path:
+            self._entry.config(state=tk.NORMAL)
             self._entry.delete(0, tk.END)
             self._entry.insert(0, file_path)
+            self._entry.config(state=tk.DISABLED)
     
     def getFilePath(self) -> str:
         """
@@ -61,8 +64,8 @@ class BallColourSlider(tk.Frame):
         """
         super().__init__(root)
 
-        self.label = tk.Label(self, text=label_text)
-        self.label.pack(side=tk.TOP, pady=5, expand=True, fill=tk.X)
+        self.label = tk.Label(self, text=label_text, font=("Arial", FontSize.HEADER))
+        self.label.pack(side=tk.TOP, pady=5, expand=tk.TRUE, fill=tk.X)
 
         self.red_slider = tk.Scale(self, from_=0, to=255, resolution=1, orient=tk.VERTICAL, label="Red", length=75)
         self.red_slider.pack(side=tk.LEFT, padx=5, pady=5)

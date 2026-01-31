@@ -10,13 +10,13 @@ def getInitialInformation() -> tuple[str, str, tuple[int]]:
     root = tk.Tk()
     root.title("Backyard DRS")
 
-    front = FileChooser(root, "Front Video Path:")
-    front.pack(side=tk.TOP, padx=10, pady=10, expand=True)
-    side = FileChooser(root, "Side Video Path:")
-    side.pack(side=tk.TOP, padx=10, pady=10, expand=True)
+    front = FileChooser(root, "Front Video Path")
+    front.pack(side=tk.TOP, padx=5, pady=5, expand=tk.TRUE, fill=tk.X)
+    side = FileChooser(root, "Side Video Path")
+    side.pack(side=tk.TOP, padx=5, pady=5, expand=tk.TRUE, fill=tk.X)
 
-    ballColourSlider = BallColourSlider(root, "Select Ball Colour:")
-    ballColourSlider.pack(side=tk.TOP, padx=10, pady=10, expand=True)
+    ballColourSlider = BallColourSlider(root, "Select Ball Colour")
+    ballColourSlider.pack(side=tk.TOP, padx=5, pady=5, expand=tk.TRUE)
 
     output = None
     def onSubmit():
@@ -30,7 +30,7 @@ def getInitialInformation() -> tuple[str, str, tuple[int]]:
             root.destroy()
 
     submitButton = tk.Button(root, text="Launch", command=onSubmit)
-    submitButton.pack(side=tk.TOP, padx=10, pady=10, expand=True)
+    submitButton.pack(side=tk.TOP, padx=5, pady=5, expand=tk.TRUE)
 
     root.mainloop()
     return output
