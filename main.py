@@ -6,6 +6,9 @@ from tkinter import messagebox
 def getInitialInformation() -> tuple[str, str, tuple[int]]:
     """
     Creates a Tkinter window to get the initial information from the user: front video path, side video path, and ball colour.
+
+    Returns:
+        A tuple representing the front video path, side video path and RGB ball colour in that order.
     """
     root = tk.Tk()
     root.title("Backyard DRS")
@@ -21,7 +24,7 @@ def getInitialInformation() -> tuple[str, str, tuple[int]]:
     output = None
     def onSubmit():
         nonlocal output
-        output = parseInformation(
+        output = validateInformation(
             front.getFilePath(),
             side.getFilePath(),
             ballColourSlider.getColour()
@@ -36,13 +39,16 @@ def getInitialInformation() -> tuple[str, str, tuple[int]]:
     return output
 
 
-def parseInformation(frontPath: str, sidePath: str, colour: tuple[int]) -> tuple[str, str, tuple[int]]:
+def validateInformation(frontPath: str, sidePath: str, colour: tuple[int]) -> tuple[str, str, tuple[int]]:
     """
     Parses the information from the Tkinter window and returns it.
     Args:
         frontPath (str): The front video path.
         sidePath (str): The side video path.
         colour (tuple[int]): The RGB colour tuple.
+    
+    Returns:
+        None if the data is invalid. Otherwise the data exactly as stored in the UI elements.
     """
     if not frontPath:
         messagebox.showerror("Input Error", "Please provide a valid front video path.")
@@ -59,7 +65,10 @@ def parseInformation(frontPath: str, sidePath: str, colour: tuple[int]) -> tuple
     return (frontPath, sidePath, colour)
 
 
-if __name__ == "__main__":
+def main() -> None:
+    """
+    Runs the main execution of the program.
+    """
     parameters = getInitialInformation()
 
     # User quits the window
@@ -69,10 +78,13 @@ if __name__ == "__main__":
     frontPath, sidePath, ballColour = parameters
     frontVideo = Video(frontPath, ballColour)
     sideVideo = Video(sidePath, ballColour)
+
+    # Ensure video can be read from the files before booting the program
     if not (frontVideo.incrementFrame() and sideVideo.incrementFrame()):
             messagebox.showerror("Read Error", "Could not read from video files.")
             quit()
     
+    # Run the program and display any unexpected errors.
     try:
         root = tk.Tk()
         controller = Controller(root, frontVideo, sideVideo)
@@ -80,3 +92,7 @@ if __name__ == "__main__":
     except Exception as e:
         root.destroy()
         messagebox.showerror("Error", f"An unexpected error occurred: {e}")
+
+
+if __name__ == "__main__":
+    main()
